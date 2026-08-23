@@ -1,0 +1,22 @@
+*_10/08/2026_*
+
+*Início*
+Nome: *Fabricio Leite*
+Matrícula: *BI-04-NH*
+Km iniciais: *73136*
+Giro: *2825H*
+Qtd Objectos: *159*
+Qtd Recolhas: *1*
+
+*Final*
+Nome: *Fabrício Leite*
+Matrícula: *BI-04-NH*
+Km Finais: *73207*
+Giro: *2825H*
+Qtd Objectos: *159*
+Qtd Recolhas: *1*
+Qtd Avisados: *1*
+Qtd Retornos: *3*
+Qtd End. Insuf.: **
+Qtd Recusados: **
+Qtd desc morada.: *1*

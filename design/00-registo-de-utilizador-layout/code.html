@@ -1,0 +1,203 @@
+<!DOCTYPE html><html lang="pt" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>CTT Delivery - Registo</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom styles to hide number input arrows for cleaner UI */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f9f9f9",
+                        "outline": "#916f6c",
+                        "primary-fixed": "#ffdad7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#ffe6e4",
+                        "primary-container": "#d3122a",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#adffa5",
+                        "surface-dim": "#dadada",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-surface-variant": "#5d3f3e",
+                        "outline-variant": "#e6bdba",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-bright": "#f9f9f9",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#930017",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "tertiary": "#066018",
+                        "primary": "#a8001c",
+                        "on-secondary-container": "#636262",
+                        "inverse-surface": "#2f3131",
+                        "on-tertiary-fixed": "#002204",
+                        "secondary-container": "#e2dfde",
+                        "surface-tint": "#bf0022",
+                        "surface-container-low": "#f3f3f3",
+                        "on-surface": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "on-primary-fixed": "#410005",
+                        "on-background": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "tertiary-fixed": "#a3f69c",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-fixed-variant": "#005312",
+                        "inverse-primary": "#ffb3af",
+                        "background": "#f9f9f9",
+                        "tertiary-container": "#2a792f",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#ffb3af",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#88d982",
+                        "surface-variant": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "gutter-mobile": "12px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "label-bold": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "button-text": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "button-text": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface shadow-sm z-40">
+<div class="flex items-center justify-between px-margin-mobile h-touch-target-min w-full max-w-[768px] mx-auto">
+<div class="flex items-center gap-xs">
+
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">CAC Atividades</h1>
+</div>
+<!-- Intentionally empty right side to balance flex-between if needed, or omit -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-[768px] mx-auto px-margin-mobile py-lg pb-[80px] flex flex-col">
+<!-- Header Section -->
+<section class="mb-lg flex flex-col gap-base">
+<h2 class="font-headline-md text-headline-md text-on-surface">Registo de Utilizador</h2>
+<p class="font-body-md text-body-md text-secondary">Crie a sua conta para aceder à plataforma.</p>
+</section>
+<!-- Form Section -->
+<section class="flex-1">
+<form class="flex flex-col gap-sm" onsubmit="event.preventDefault();">
+<!-- Nome Completo -->
+<div class="flex flex-col gap-base">
+<label class="font-label-bold text-label-bold text-on-surface" for="nome">Nome Completo</label>
+<input class="h-[56px] px-md rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors w-full" id="nome" name="nome" placeholder="Insira o seu nome completo" required="" type="text">
+</div>
+<!-- Número de Telemóvel -->
+<div class="flex flex-col gap-base">
+<label class="font-label-bold text-label-bold text-on-surface" for="telemovel">Número de Telemóvel</label>
+<input class="h-[56px] px-md rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors w-full" id="telemovel" name="telemovel" pattern="[0-9]{9}" placeholder="Ex: 912345678" required="" type="tel">
+</div>
+<!-- Número de Colaborador -->
+<div class="flex flex-col gap-base">
+<label class="font-label-bold text-label-bold text-on-surface" for="colaborador">Número de Colaborador (SC)</label>
+<input class="h-[56px] px-md rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors w-full" id="colaborador" name="colaborador" placeholder="Insira o seu número SC" required="" type="number">
+</div>
+<!-- Palavra-passe -->
+<div class="flex flex-col gap-base relative">
+<label class="font-label-bold text-label-bold text-on-surface" for="password">Palavra-passe</label>
+<div class="relative w-full">
+<input class="h-[56px] w-full pl-md pr-[48px] rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" id="password" name="password" placeholder="Defina uma palavra-passe" required="" type="password">
+<button aria-label="Toggle password visibility" class="absolute right-0 top-0 h-[56px] w-[48px] flex items-center justify-center text-secondary hover:text-on-surface transition-colors active:scale-95" id="togglePasswordBtn" type="button">
+<span class="material-symbols-outlined" data-icon="visibility" id="toggleIcon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="mt-md h-touch-target-min w-full bg-primary text-on-primary rounded-xl font-button-text text-button-text flex items-center justify-center hover:bg-surface-tint active:scale-95 transition-all shadow-sm" type="submit">
+                    Criar Conta
+                </button>
+</form>
+</section>
+<!-- Footer Link -->
+<div class="mt-xl text-center">
+<a class="font-body-sm text-body-sm text-secondary hover:text-primary transition-colors" href="#">
+                Já tem uma conta? <span class="font-label-bold text-label-bold text-primary underline underline-offset-4">Iniciar Sessão</span>
+</a>
+</div>
+</main>
+<script>
+        // Password Visibility Toggle Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.getElementById('togglePasswordBtn');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            toggleBtn.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                if (type === 'text') {
+                    toggleIcon.textContent = 'visibility_off';
+                    toggleIcon.setAttribute('data-icon', 'visibility_off');
+                } else {
+                    toggleIcon.textContent = 'visibility';
+                    toggleIcon.setAttribute('data-icon', 'visibility');
+                }
+            });
+        });
+    </script>
+
+
+</body></html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html><html lang="pt" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Estatísticas Diárias - CTT Delivery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#adffa5",
+                      "primary-fixed": "#ffdad7",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#a3f69c",
+                      "inverse-surface": "#2f3131",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#e2e2e2",
+                      "secondary": "#5f5e5e",
+                      "tertiary-container": "#2a792f",
+                      "surface-container-highest": "#e2e2e2",
+                      "surface-container-low": "#f3f3f3",
+                      "on-tertiary-fixed": "#002204",
+                      "secondary-container": "#e2dfde",
+                      "primary-fixed-dim": "#ffb3af",
+                      "tertiary-fixed-dim": "#88d982",
+                      "on-secondary-container": "#636262",
+                      "on-surface-variant": "#5d3f3e",
+                      "on-tertiary-fixed-variant": "#005312",
+                      "outline": "#916f6c",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#1a1c1c",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-primary-fixed-variant": "#930017",
+                      "secondary-fixed-dim": "#c8c6c5",
+                      "outline-variant": "#e6bdba",
+                      "surface-bright": "#f9f9f9",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#474746",
+                      "tertiary": "#066018",
+                      "on-error": "#ffffff",
+                      "surface-container": "#eeeeee",
+                      "surface-container-high": "#e8e8e8",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#dadada",
+                      "surface": "#f9f9f9",
+                      "inverse-on-surface": "#f1f1f1",
+                      "on-primary-fixed": "#410005",
+                      "inverse-primary": "#ffb3af",
+                      "primary": "#a8001c",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#ffe6e4",
+                      "background": "#f9f9f9",
+                      "on-background": "#1a1c1c",
+                      "primary-container": "#d3122a",
+                      "surface-tint": "#bf0022"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "sm": "12px",
+                      "xs": "8px",
+                      "touch-target-min": "48px",
+                      "base": "4px",
+                      "gutter-mobile": "12px",
+                      "margin-mobile": "16px",
+                      "lg": "24px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "button-text": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "button-text": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-[80px]">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface shadow-sm z-40">
+<div class="flex items-center justify-between px-margin-mobile h-touch-target-min w-full max-w-[768px] mx-auto">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1;">local_shipping</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary"><h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight cursor-text" spellcheck="false" data-stitch-added-classes="cursor-text" style="--tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0; --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1; --tw-pan-x: ; --tw-pan-y: ; --tw-pinch-zoom: ; --tw-scroll-snap-strictness: proximity; --tw-gradient-from-position: ; --tw-gradient-via-position: ; --tw-gradient-to-position: ; --tw-ordinal: ; --tw-slashed-zero: ; --tw-numeric-figure: ; --tw-numeric-spacing: ; --tw-numeric-fraction: ; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ; --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ; --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ; --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ; --tw-contain-size: ; --tw-contain-layout: ; --tw-contain-paint: ; --tw-contain-style: ; letter-spacing: -0.025em; --tw-text-opacity: 1; color: rgb(168, 0, 28); outline: none !important; box-shadow: none !important;">CAC Atividades</h1></h1>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[768px] mx-auto px-margin-mobile pt-lg pb-xl flex flex-col gap-md">
+<header class="mb-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Métrica Diária</h2>
+<p class="font-body-sm text-body-sm text-secondary">24 de Outubro, 2023</p>
+</header>
+<!-- Bento Grid for Metrics -->
+<div class="grid grid-cols-2 gap-sm">
+<!-- Metric Card: Delivered -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border-l-[4px] border-tertiary-container flex flex-col justify-between min-h-[120px]">
+<div class="flex items-center gap-xs text-secondary mb-xs">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+<span class="font-label-bold text-label-bold">ENTREGUES</span>
+</div>
+<div>
+<span class="font-display-lg text-display-lg text-on-surface">84</span>
+<span class="font-body-sm text-body-sm text-secondary block mt-base">Objetos</span>
+</div>
+</div>
+<!-- Metric Card: Not Delivered -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border-l-[4px] border-primary flex flex-col justify-between min-h-[120px]">
+<div class="flex items-center gap-xs text-secondary mb-xs">
+<span class="material-symbols-outlined text-[20px]" data-icon="cancel">cancel</span>
+<span class="font-label-bold text-label-bold">NÃO ENTREGUES</span>
+</div>
+<div>
+<span class="font-display-lg text-display-lg text-on-surface">3</span>
+<span class="font-body-sm text-body-sm text-secondary block mt-base">Objetos</span>
+</div>
+</div>
+<!-- Metric Card: Distance -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-sm border-l-[4px] border-secondary-fixed-dim flex flex-col justify-between min-h-[120px] col-span-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs text-secondary mb-xs">
+<span class="material-symbols-outlined text-[20px]" data-icon="route">route</span>
+<span class="font-label-bold text-label-bold">DISTÂNCIA PERCORRIDA</span>
+</div>
+</div>
+<div class="flex items-end gap-sm">
+<span class="font-display-lg text-display-lg text-on-surface">42.5</span>
+<span class="font-body-md text-body-md text-secondary mb-xs">Km</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full mt-sm overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 70%;"></div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mt-base text-right">70% da rota estimada</p>
+</div>
+<!-- Metric Card: Efficiency -->
+<div class="bg-primary-container rounded-lg p-md shadow-sm flex flex-col justify-between min-h-[120px] col-span-2 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]" data-icon="bolt">bolt</span>
+</div>
+<div class="flex items-center gap-xs text-on-primary-container mb-xs relative z-10">
+<span class="material-symbols-outlined text-[20px]" data-icon="trending_up">trending_up</span>
+<span class="font-label-bold text-label-bold">EFICIÊNCIA</span>
+</div>
+<div class="relative z-10">
+<span class="font-display-lg text-display-lg text-on-primary-container">96%</span>
+<span class="font-body-sm text-body-sm text-on-primary-container opacity-80 block mt-base">Taxa de Sucesso</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 h-[80px] bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,0,0,0.12)]">
+<div class="fixed bottom-0 left-0 right-0 flex justify-around items-center px-4 pb-safe max-w-[768px] mx-auto h-[80px]">
+<!-- Início -->
+<button class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="font-label-bold text-label-bold">Início</span>
+</button>
+<!-- Registo -->
+<button class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined mb-1" data-icon="assignment">assignment</span>
+<span class="font-label-bold text-label-bold">Registo</span>
+</button>
+<!-- Estatísticas (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 hover:bg-surface-variant active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined mb-1" data-icon="leaderboard" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1;">leaderboard</span>
+<span class="font-label-bold text-label-bold">Estatísticas</span>
+</button>
+<!-- Perfil -->
+<button class="flex flex-col items-center justify-center text-secondary px-4 py-1 hover:bg-surface-variant active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-bold text-label-bold">Perfil</span>
+</button>
+</div>
+</nav>
+
+
+</body></html>
