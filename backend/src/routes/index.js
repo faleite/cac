@@ -4,6 +4,7 @@ const prisma = require('../database/prisma');
 
 const authRoutes = require('./auth.routes');
 const perfilRoutes = require('./perfil.routes');
+const registosRoutes = require('./registos.routes');
 
 // Health Check geral da API
 router.get('/health', async (req, res) => {
@@ -32,5 +33,6 @@ router.get('/health', async (req, res) => {
 // Agrupamento de rotas por módulo
 router.use('/auth', authRoutes);
 router.use('/perfil', perfilRoutes);
+router.use('/registos', registosRoutes);
 
 module.exports = router;

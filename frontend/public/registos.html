@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Registos - CAC Atividades</title>
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    .registo-card {
+      background-color: var(--color-surface-container-lowest);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .registo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-surface-container-high);
+    }
+    .registo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 16px;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .registo-meta {
+      color: var(--color-secondary);
+      font-size: 12px;
+    }
+    .registo-val {
+      font-weight: 600;
+      color: var(--color-on-surface);
+    }
+    .badge-aberto {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-fechado {
+      background-color: var(--color-tertiary-container);
+      color: var(--color-on-tertiary-container);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    /* Modal de Edição */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-card {
+      background: var(--color-surface-container-lowest);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background">
+
+  <!-- Header Superior -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="app-brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+        <span class="brand-title">CAC Atividades</span>
+      </div>
+      <div class="user-greeting">
+        <span id="user-display-name">Operador</span>
+        <button id="btn-logout" class="btn-logout" title="Terminar sessão">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-container" style="padding-bottom: 90px;">
+    
+    <div class="mb-3" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+      <div>
+        <h1 class="page-title">Histórico de Turnos</h1>
+        <p class="page-subtitle">Acompanhamento de atividades e registos diários</p>
+      </div>
+      <a href="/abertura.html" class="btn btn-sm btn-primary" style="text-decoration: none; padding: 8px 16px;">+ Novo Turno</a>
+    </div>
+
+    <div id="alert-container" style="display: none;"></div>
+
+    <!-- Filtro rápido por status -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <button class="btn btn-sm filter-btn" data-status="" style="background-color: var(--color-on-surface); color: #fff;">Todos</button>
+      <button class="btn btn-sm filter-btn" data-status="fechado" style="background-color: var(--color-surface-container-high); color: var(--color-on-surface);">Fechados</button>
+      <button class="btn btn-sm filter-btn" data-status="aberto" style="background-color: var(--color-surface-container-high); color: var(--color-on-surface);">Abertos</button>
+    </div>
+
+    <!-- Lista de Turnos -->
+    <div id="lista-registos">
+      <div style="text-align: center; padding: 30px; color: var(--color-secondary);">
+        A carregar histórico...
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal de Edição com Auditoria -->
+  <div id="modal-editar" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 12px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--color-on-surface); margin: 0;">Editar Registo com Auditoria</h3>
+        <button type="button" id="btn-fechar-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-secondary);">&times;</button>
+      </div>
+
+      <div id="modal-alert-container" style="display: none;"></div>
+
+      <form id="form-editar" novalidate>
+        <input type="hidden" id="edit-id" name="id">
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" for="edit-motivo">Motivo da Alteração <span style="color: var(--color-primary);">*</span></label>
+          <input type="text" id="edit-motivo" name="motivo" class="form-control" placeholder="Ex: Correção na digitação do Km final" required>
+          <small style="color: var(--color-secondary); font-size: 12px;">Obrigatório para registro de auditoria e conformidade.</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-km-inicial">Km Inicial</label>
+            <input type="number" id="edit-km-inicial" name="kmInicial" class="form-control" required min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-km-final">Km Final</label>
+            <input type="number" id="edit-km-final" name="kmFinal" class="form-control" min="0">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-matricula">Matrícula</label>
+            <input type="text" id="edit-matricula" name="matriculaDia" class="form-control" required style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-giro">Código do Giro</label>
+            <input type="text" id="edit-giro" name="giroDia" class="form-control" required style="text-transform: uppercase;">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-objetos">Qtd. Objetos</label>
+            <input type="number" id="edit-objetos" name="qtdObjetos" class="form-control" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-recolhas">Qtd. Recolhas</label>
+            <input type="number" id="edit-recolhas" name="qtdRecolhas" class="form-control" min="0">
+          </div>
+        </div>
+
+        <div style="background-color: var(--color-surface-container-low); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+          <span style="font-size: 13px; font-weight: 700; color: var(--color-on-surface); display: block; margin-bottom: 8px;">Incidências (Não Entregues)</span>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <label style="font-size: 12px; color: var(--color-secondary);">Avisados</label>
+              <input type="number" id="edit-avisados" name="qtdAvisados" class="form-control" style="height: 44px;" min="0">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--color-secondary);">Retornos</label>
+              <input type="number" id="edit-retornos" name="qtdRetornos" class="form-control" style="height: 44px;" min="0">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--color-secondary);">End. Insuficiente</label>
+              <input type="number" id="edit-end-insuf" name="qtdEndInsuficiente" class="form-control" style="height: 44px;" min="0">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--color-secondary);">Recusados</label>
+              <input type="number" id="edit-recusados" name="qtdRecusados" class="form-control" style="height: 44px;" min="0">
+            </div>
+            <div style="grid-column: span 2;">
+              <label style="font-size: 12px; color: var(--color-secondary);">Desconhecido Morada</label>
+              <input type="number" id="edit-desc-morada" name="qtdDescMorada" class="form-control" style="height: 44px;" min="0">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" id="btn-cancelar-modal" class="btn btn-secondary" style="padding: 10px 16px;">Cancelar</button>
+          <button type="submit" id="btn-salvar-edicao" class="btn btn-primary" style="padding: 10px 20px;">Guardar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="/abertura.html" class="bottom-nav-item">
+      <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+      </svg>
+      <span>Abertura</span>
+    </a>
+    <a href="/fecho.html" class="bottom-nav-item">
+      <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+      </svg>
+      <span>Fecho</span>
+    </a>
+    <a href="/registos.html" class="bottom-nav-item active">
+      <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+      </svg>
+      <span>Histórico</span>
+    </a>
+    <a href="/perfil.html" class="bottom-nav-item">
+      <svg class="bottom-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+      <span>Perfil</span>
+    </a>
+  </nav>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let statusFiltro = '';
+    let todosRegistos = [];
+
+    async function carregarRegistos() {
+      const query = statusFiltro ? `?status=${statusFiltro}` : '';
+      const res = await CAC.api(`/registos${query}`);
+      const container = document.getElementById('lista-registos');
+
+      if (!res.ok || !res.data || !res.data.dados) {
+        container.innerHTML = `
+          <div class="alert alert-danger">
+            Não foi possível carregar os registos no momento.
+          </div>
+        `;
+        return;
+      }
+
+      todosRegistos = res.data.dados;
+
+      if (todosRegistos.length === 0) {
+        container.innerHTML = `
+          <div class="card text-center" style="padding: 32px 16px; color: var(--color-secondary);">
+            <p style="margin-bottom: 12px;">Nenhum turno registado encontrado para este filtro.</p>
+            <a href="/abertura.html" class="btn btn-sm btn-primary" style="text-decoration: none;">Registar Primeiro Turno</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = todosRegistos.map(reg => {
+        const isAberto = reg.status === 'aberto';
+        const badgeClass = isAberto ? 'badge-aberto' : 'badge-fechado';
+        const badgeTexto = isAberto ? 'Aberto' : 'Concluído';
+        const dataFormatada = reg.dataRegisto || '--';
+
+        return `
+          <div class="registo-card" id="card-registo-${reg.id}">
+            <div class="registo-header">
+              <div>
+                <strong style="font-size: 16px; color: var(--color-on-surface);">${dataFormatada}</strong>
+                <span class="registo-meta" style="margin-left: 8px;">Giro: ${reg.giroDia} | Viatura: ${reg.matriculaDia}</span>
+              </div>
+              <span class="${badgeClass}">${badgeTexto}</span>
+            </div>
+
+            <div class="registo-grid">
+              <div>
+                <span class="registo-meta">Km Inicial:</span>
+                <span class="registo-val">${reg.kmInicial}</span>
+              </div>
+              <div>
+                <span class="registo-meta">Km Final:</span>
+                <span class="registo-val">${reg.kmFinal !== null && reg.kmFinal !== undefined ? reg.kmFinal : '--'}</span>
+              </div>
+              <div>
+                <span class="registo-meta">Km Percorridos:</span>
+                <span class="registo-val">${reg.kmPercorridos} km</span>
+              </div>
+              <div>
+                <span class="registo-meta">Eficiência:</span>
+                <span class="registo-val" style="color: var(--color-tertiary);">${reg.taxaEficiencia}%</span>
+              </div>
+              <div>
+                <span class="registo-meta">Total Objetos:</span>
+                <span class="registo-val">${reg.qtdObjetos}</span>
+              </div>
+              <div>
+                <span class="registo-meta">Entregues Efetivos:</span>
+                <span class="registo-val" style="color: var(--color-tertiary);">${reg.qtdEntregues}</span>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--color-surface-container-high); padding-top: 10px; margin-top: 4px;">
+              ${isAberto ? `
+                <a href="/fecho.html" class="btn btn-sm btn-primary" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">
+                  Encerrar Turno
+                </a>
+              ` : ''}
+              <button class="btn btn-sm btn-secondary" onclick="abrirModalEdicao('${reg.id}')" style="padding: 6px 12px; font-size: 13px;">
+                Editar com Auditoria
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Modal de Edição
+    function abrirModalEdicao(id) {
+      const reg = todosRegistos.find(r => r.id === id);
+      if (!reg) return;
+
+      CAC.limparAlerta('modal-alert-container');
+      document.getElementById('edit-id').value = reg.id;
+      document.getElementById('edit-motivo').value = '';
+      document.getElementById('edit-km-inicial').value = reg.kmInicial;
+      document.getElementById('edit-km-final').value = reg.kmFinal !== null ? reg.kmFinal : '';
+      document.getElementById('edit-matricula').value = reg.matriculaDia;
+      document.getElementById('edit-giro').value = reg.giroDia;
+      document.getElementById('edit-objetos').value = reg.qtdObjetos;
+      document.getElementById('edit-recolhas').value = reg.qtdRecolhas;
+      document.getElementById('edit-avisados').value = reg.qtdAvisados;
+      document.getElementById('edit-retornos').value = reg.qtdRetornos;
+      document.getElementById('edit-end-insuf').value = reg.qtdEndInsuficiente;
+      document.getElementById('edit-recusados').value = reg.qtdRecusados;
+      document.getElementById('edit-desc-morada').value = reg.qtdDescMorada;
+
+      document.getElementById('modal-editar').style.display = 'flex';
+    }
+
+    function fecharModalEdicao() {
+      document.getElementById('modal-editar').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Autenticação
+      const usuario = await CAC.obterSessao();
+      if (!usuario) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      document.getElementById('user-display-name').textContent = usuario.nomeCompleto.split(' ')[0];
+      document.getElementById('btn-logout').addEventListener('click', () => CAC.logout());
+
+      // 2. Filtros
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.style.backgroundColor = 'var(--color-surface-container-high)';
+            b.style.color = 'var(--color-on-surface)';
+          });
+          btn.style.backgroundColor = 'var(--color-on-surface)';
+          btn.style.color = '#fff';
+          statusFiltro = btn.getAttribute('data-status');
+          carregarRegistos();
+        });
+      });
+
+      // 3. Modal event listeners
+      document.getElementById('btn-fechar-modal').addEventListener('click', fecharModalEdicao);
+      document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModalEdicao);
+
+      // 4. Salvar Edição com Auditoria
+      const formEditar = document.getElementById('form-editar');
+      formEditar.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        CAC.limparAlerta('modal-alert-container');
+
+        const id = document.getElementById('edit-id').value;
+        const motivo = document.getElementById('edit-motivo').value.trim();
+
+        if (!motivo || motivo.length < 3) {
+          CAC.mostrarAlerta('modal-alert-container', 'Por favor, informe uma justificativa válida no motivo da alteração (mínimo 3 caracteres).', 'danger');
+          document.getElementById('edit-motivo').focus();
+          return;
+        }
+
+        const kmInicial = parseInt(document.getElementById('edit-km-inicial').value, 10);
+        const kmFinalStr = document.getElementById('edit-km-final').value;
+        const kmFinal = kmFinalStr !== '' ? parseInt(kmFinalStr, 10) : null;
+        const matriculaDia = document.getElementById('edit-matricula').value.trim().toUpperCase();
+        const giroDia = document.getElementById('edit-giro').value.trim().toUpperCase();
+        const qtdObjetos = parseInt(document.getElementById('edit-objetos').value || 0, 10);
+        const qtdRecolhas = parseInt(document.getElementById('edit-recolhas').value || 0, 10);
+        const qtdAvisados = parseInt(document.getElementById('edit-avisados').value || 0, 10);
+        const qtdRetornos = parseInt(document.getElementById('edit-retornos').value || 0, 10);
+        const qtdEndInsuficiente = parseInt(document.getElementById('edit-end-insuf').value || 0, 10);
+        const qtdRecusados = parseInt(document.getElementById('edit-recusados').value || 0, 10);
+        const qtdDescMorada = parseInt(document.getElementById('edit-desc-morada').value || 0, 10);
+
+        const btnSalvar = document.getElementById('btn-salvar-edicao');
+        btnSalvar.disabled = true;
+        btnSalvar.textContent = 'A guardar...';
+
+        const res = await CAC.api(`/registos/${id}`, {
+          method: 'PUT',
+          body: {
+            motivo,
+            kmInicial,
+            kmFinal,
+            matriculaDia,
+            giroDia,
+            qtdObjetos,
+            qtdRecolhas,
+            qtdAvisados,
+            qtdRetornos,
+            qtdEndInsuficiente,
+            qtdRecusados,
+            qtdDescMorada
+          }
+        });
+
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = 'Guardar Alterações';
+
+        if (res.ok) {
+          fecharModalEdicao();
+          CAC.mostrarAlerta('alert-container', 'Registo alterado e histórico de auditoria gravado com sucesso!', 'success');
+          carregarRegistos();
+        } else {
+          CAC.mostrarAlerta('modal-alert-container', res.data.mensagem || 'Falha ao atualizar registo.', 'danger');
+        }
+      });
+
+      // Carregar lista inicial
+      carregarRegistos();
+    });
+  </script>
+</body>
+</html>
