@@ -7,12 +7,137 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Os modelos de dados da sua aplicação serão definidos aqui.
+// =============================================================================
+// Entidade 1: Usuario (usuarios)
+// Credenciais, identificação e tokens de recuperação
+// =============================================================================
+model Usuario {
+  id               BigInt    @id @default(autoincrement())
+  nomeCompleto     String    @map("nome_completo") @db.VarChar(150)
+  numeroSc         String    @unique @map("numero_sc") @db.VarChar(30)
+  telemovel        String    @db.VarChar(20)
+  email            String    @unique @db.VarChar(150)
+  senhaHash        String    @map("senha_hash") @db.VarChar(255)
+  perfil           String    @default("operador") @db.VarChar(20) // 'operador' | 'administrador'
+  ativo            Boolean   @default(true)
+  tokenRecuperacao String?   @map("token_recuperacao") @db.VarChar(255)
+  tokenExpiracao   DateTime? @map("token_expiracao") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-// Modelo base inicial para a aplicação
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  // Relacionamentos
+  perfilConfiguracao PerfilConfiguracao?
+  registosDiarios    RegistoDiario[]
+  auditoriasFeitas   AuditoriaRegisto[]  @relation("UsuarioAuditoria")
+  logsSeguranca      LogSeguranca[]
+
+  @@map("usuarios")
+}
+
+// =============================================================================
+// Entidade 2: PerfilConfiguracao (perfis_configuracao)
+// Preferências habituais do colaborador (Matrícula e Giro Padrão)
+// =============================================================================
+model PerfilConfiguracao {
+  id              BigInt   @id @default(autoincrement())
+  usuarioId       BigInt   @unique @map("usuario_id")
+  matriculaPadrao String?  @map("matricula_padrao") @db.VarChar(20)
+  giroPadrao      String?  @map("giro_padrao") @db.VarChar(20)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relacionamento com Usuario (1:1, exclusão em cascata)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfis_configuracao")
+}
+
+// =============================================================================
+// Entidade 3: RegistoDiario (registos_diarios)
+// Controlo diário de turnos, entregas e incidências postais
+// =============================================================================
+model RegistoDiario {
+  id                 BigInt    @id @default(autoincrement())
+  usuarioId          BigInt    @map("usuario_id")
+  dataRegisto        DateTime  @map("data_registo") @db.Date
+  status             String    @default("aberto") @db.VarChar(20) // 'aberto' | 'fechado'
+  kmInicial          Int       @map("km_inicial")
+  kmFinal            Int?      @map("km_final")
+  matriculaDia       String    @map("matricula_dia") @db.VarChar(20)
+  giroDia            String    @map("giro_dia") @db.VarChar(20)
+  qtdObjetos         Int       @default(0) @map("qtd_objetos")
+  qtdRecolhas        Int       @default(0) @map("qtd_recolhas")
+  qtdAvisados        Int       @default(0) @map("qtd_avisados")
+  qtdRetornos        Int       @default(0) @map("qtd_retornos")
+  qtdEndInsuficiente Int       @default(0) @map("qtd_end_insuficiente")
+  qtdRecusados       Int       @default(0) @map("qtd_recusados")
+  qtdDescMorada      Int       @default(0) @map("qtd_desc_morada")
+  qtdEntregues       Int       @default(0) @map("qtd_entregues")
+  taxaEficiencia     Decimal   @default(0.00) @map("taxa_eficiencia") @db.Decimal(5, 2)
+  kmPercorridos      Int       @default(0) @map("km_percorridos")
+  dataHoraAbertura   DateTime  @default(now()) @map("data_hora_abertura") @db.Timestamptz
+  dataHoraFecho      DateTime? @map("data_hora_fecho") @db.Timestamptz
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relacionamentos
+  usuario    Usuario            @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  auditorias AuditoriaRegisto[]
+
+  // Constraints e Índices de Performance
+  @@unique([usuarioId, dataRegisto], name: "unq_usuario_data_registo")
+  @@index([usuarioId, dataRegisto], name: "idx_registos_usuario_data")
+  @@index([dataRegisto, status], name: "idx_registos_data_status")
+  @@index([usuarioId, status], name: "idx_registos_usuario_status")
+  @@map("registos_diarios")
+}
+
+// =============================================================================
+// Entidade 4: AuditoriaRegisto (auditoria_registos)
+// Histórico de alterações e justificativas em turnos
+// =============================================================================
+model AuditoriaRegisto {
+  id                 BigInt   @id @default(autoincrement())
+  registoDiarioId    BigInt   @map("registo_diario_id")
+  usuarioAlteracaoId BigInt   @map("usuario_alteracao_id")
+  dataHoraAlteracao  DateTime @default(now()) @map("data_hora_alteracao") @db.Timestamptz
+  valoresAntigos     Json     @map("valores_antigos") @db.JsonB
+  valoresNovos       Json     @map("valores_novos") @db.JsonB
+  motivo             String?  @db.VarChar(255)
+
+  // Relacionamentos
+  registoDiario    RegistoDiario @relation(fields: [registoDiarioId], references: [id], onDelete: Cascade)
+  usuarioAlteracao Usuario       @relation("UsuarioAuditoria", fields: [usuarioAlteracaoId], references: [id], onDelete: Restrict)
+
+  @@index([registoDiarioId], name: "idx_auditoria_registo")
+  @@map("auditoria_registos")
+}
+
+// =============================================================================
+// Entidade 5: LogSeguranca (logs_seguranca)
+// Auditoria de eventos sensíveis (login falho, acessos negados, edições)
+// =============================================================================
+model LogSeguranca {
+  id         BigInt   @id @default(autoincrement())
+  tipoEvento String   @map("tipo_evento") @db.VarChar(50)
+  usuarioId  BigInt?  @map("usuario_id")
+  ipOrigem   String?  @map("ip_origem") @db.VarChar(45)
+  detalhes   String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relacionamento (SetNull em exclusão de usuário)
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@map("logs_seguranca")
+}
+
+// =============================================================================
+// Tabela de Sessões: AppSessao (app_sessoes)
+// Utilizada por express-session via connect-pg-simple
+// =============================================================================
+model AppSessao {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], name: "idx_sessoes_expire")
+  @@map("app_sessoes")
 }
