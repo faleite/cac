@@ -18,6 +18,8 @@ services:
     restart: always
     depends_on:
       - db
+    env_file:
+      - .env
     environment:
       PORT: ${PORT}
       DATABASE_URL: ${DATABASE_URL}
