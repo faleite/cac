@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CAC Atividades - Recuperar Palavra-passe</title>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <a href="/login.html" class="brand-title">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        CAC Atividades
+      </a>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="app-container" style="justify-content: center; max-width: 420px;">
+    <div class="card" style="margin-top: 20px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="width: 56px; height: 56px; background-color: var(--color-on-primary-container); color: var(--color-primary); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+          <svg style="width: 28px; height: 28px; fill: currentColor;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        <h2 style="font-size: 22px; font-weight: 700; color: var(--color-on-surface);">Recuperar Acesso</h2>
+        <p style="font-size: 14px; color: var(--color-secondary);">Introduza o seu e-mail para receber as instruções de recuperação.</p>
+      </div>
+
+      <!-- Alertas -->
+      <div id="alerta-container" style="display: none;"></div>
+
+      <!-- Formulário de Recuperação -->
+      <form id="form-recuperar">
+        <div class="form-group">
+          <label class="form-label" for="email">Endereço de E-mail Registado</label>
+          <input class="form-control" type="email" id="email" name="email" placeholder="exemplo@correios.pt" required autofocus autocomplete="email">
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-submit" style="margin-top: 8px;">
+          <span>Enviar Link de Recuperação</span>
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Rodapé -->
+    <div style="text-align: center; padding: 12px;">
+      <a href="/login.html" class="link" style="font-size: 14px;">&larr; Voltar ao Início de Sessão</a>
+    </div>
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script>
+    const form = document.getElementById('form-recuperar');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      CAC.limparAlerta('alerta-container');
+
+      const email = document.getElementById('email').value.trim();
+
+      btnSubmit.disabled = true;
+      btnSubmit.style.opacity = '0.7';
+
+      const res = await CAC.api('/auth/recuperar-senha', {
+        method: 'POST',
+        body: { email }
+      });
+
+      btnSubmit.disabled = false;
+      btnSubmit.style.opacity = '1';
+
+      if (res.ok) {
+        CAC.mostrarAlerta('alerta-container', res.data.mensagem, 'success');
+        form.reset();
+      } else {
+        CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Ocorreu um erro ao processar o pedido.', 'danger');
+      }
+    });
+  </script>
+</body>
+</html>

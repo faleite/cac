@@ -9,6 +9,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | ID | Data | Módulo / Componente | Descrição da Ocorrência | Causa-Raiz | Solução / Contramedida Adotada | Status |
 |:---:|:---:|---|---|---|---|:---:|
 | **ERR-001** | 2026-09-26 | Docker / Ambiente | Conexão com o socket do Docker (`unix:///Users/.../.docker/run/docker.sock`) restrita pelo sandbox de execução de comandos. | O agente opera em sandbox seguro que bloqueia acesso direto a sockets Unix fora do workspace sem elevação de permissão. | Operações de subida/execução no Docker que necessitarem de bypass devem ser aprovadas pelo usuário ou os comandos devem ser documentados para execução manual/assistida. | **Mitigado** |
+| **ERR-002** | 2026-09-26 | Backend / Dependências | Falha de carregamento do binário nativo de compilação C++ do pacote `bcrypt` (`bcrypt_lib.node`). | O pacote nativo `bcrypt` exige compilação via `node-gyp`/Python no host, gerando inconsistências entre macOS arm64 e Linux Alpine. | Adoção do pacote `bcryptjs` (implementação 100% JavaScript puro sem dependências nativas C++), garantindo portabilidade universal e mesma segurança criptográfica. | **Resolvido** |
 
 ---
 
@@ -18,6 +19,11 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 - **Contexto:** Ao tentar verificar o status dos containers (`docker compose ps`), o comando retornou erro de permissão negada no socket do Docker.
 - **Impacto:** Comandos locais de CLI que dependem do daemon do Docker exigem bypass do sandbox quando executados pela IA, ou podem ser acionados diretamente pelo usuário no terminal.
 - **Resolução:** As instruções e comandos foram padronizados no `AGENTS.md` e em `docs/PLANO.md` para uso direto com `docker compose`.
+
+### Caso ERR-002: Dependência Nativa do Bcrypt
+- **Contexto:** Durante os testes locais da Fase 3, o Node.js reportou ausência do binário nativo de binding do `bcrypt`.
+- **Impacto:** Falha na inicialização do servidor ou nos testes unitários se os scripts de pós-instalação C++ forem bloqueados.
+- **Resolução:** Substituição do `bcrypt` pelo `bcryptjs`, mantendo a mesma interface de chamadas (`hash`, `compare`) e o mesmo fator de trabalho (10 rounds), eliminando qualquer dependência de ferramentas de compilação C++ no SO.
 
 ---
 

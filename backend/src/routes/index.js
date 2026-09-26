@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../database/prisma');
 
+const authRoutes = require('./auth.routes');
+const perfilRoutes = require('./perfil.routes');
+
 // Health Check geral da API
 router.get('/health', async (req, res) => {
   try {
-    // Validação de conexão e contagem de usuários para certificar o Prisma Client
     const totalUsuarios = await prisma.usuario.count();
 
     res.json({
@@ -26,5 +28,9 @@ router.get('/health', async (req, res) => {
     });
   }
 });
+
+// Agrupamento de rotas por módulo
+router.use('/auth', authRoutes);
+router.use('/perfil', perfilRoutes);
 
 module.exports = router;

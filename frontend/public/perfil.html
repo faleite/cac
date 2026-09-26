@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CAC Atividades - Perfil do Colaborador</title>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="with-bottom-nav">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-header-inner">
+      <a href="/perfil.html" class="brand-title">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        CAC Atividades
+      </a>
+      <button id="btn-header-logout" class="link" style="background: none; border: none; font-size: 14px; cursor: pointer; color: var(--color-primary); font-weight: 600;">Sair</button>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="app-container">
+    <div style="margin-bottom: 16px; margin-top: 8px;">
+      <h2 style="font-size: 20px; font-weight: 700; color: var(--color-on-surface);">Perfil & Preferências</h2>
+      <p style="font-size: 14px; color: var(--color-secondary);">Configure as suas informações habituais para agilizar os turnos diários.</p>
+    </div>
+
+    <!-- Alertas -->
+    <div id="alerta-container" style="display: none;"></div>
+
+    <!-- Card de Identificação do Utilizador -->
+    <div class="card" style="display: flex; align-items: center; gap: 16px;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--color-primary-container); color: var(--color-on-primary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; shrink: 0;" id="user-avatar">
+        U
+      </div>
+      <div style="flex: 1;">
+        <h3 id="user-nome" style="font-size: 18px; font-weight: 700; color: var(--color-on-surface); line-height: 1.2;">A carregar...</h3>
+        <p id="user-sc-email" style="font-size: 13px; color: var(--color-secondary); margin-top: 2px;">SC: -- | --</p>
+        <div style="margin-top: 6px; display: flex; gap: 6px;">
+          <span class="badge badge-success" id="user-status">Ativo</span>
+          <span class="badge" style="background-color: var(--color-secondary-container); color: var(--color-on-surface);" id="user-perfil">Operador</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário de Preferências e Dados -->
+    <form id="form-perfil">
+      <div class="card">
+        <h3 class="card-title">Preferências Habituais de Entrega</h3>
+        <p class="card-subtitle">Estes dados serão pré-preenchidos automaticamente na Abertura do Turno.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="matricula_padrao">Matrícula do Veículo Padrão</label>
+          <input class="form-control" type="text" id="matricula_padrao" name="matricula_padrao" placeholder="Ex: BI-04-NH" style="text-transform: uppercase;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="giro_padrao">Código do Giro / Rota Padrão</label>
+          <input class="form-control" type="text" id="giro_padrao" name="giro_padrao" placeholder="Ex: 2825H" style="text-transform: uppercase;">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Dados Pessoais</h3>
+
+        <div class="form-group">
+          <label class="form-label" for="nome_completo">Nome Completo</label>
+          <input class="form-control" type="text" id="nome_completo" name="nome_completo" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="telemovel">Número de Telemóvel</label>
+          <input class="form-control" type="tel" id="telemovel" name="telemovel" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Endereço de E-mail (Informativo)</label>
+          <input class="form-control" type="email" id="email" name="email" readonly disabled>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Alterar Palavra-passe (Opcional)</h3>
+        <p class="card-subtitle">Deixe em branco caso deseje manter a palavra-passe atual.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="senha_atual">Palavra-passe Atual</label>
+          <input class="form-control" type="password" id="senha_atual" name="senha_atual" placeholder="Introduza a sua senha atual">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="nova_senha">Nova Palavra-passe</label>
+          <input class="form-control" type="password" id="nova_senha" name="nova_senha" placeholder="Mínimo 6 caracteres" minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmar_nova_senha">Confirmar Nova Palavra-passe</label>
+          <input class="form-control" type="password" id="confirmar_nova_senha" name="confirmar_nova_senha" placeholder="Repita a nova palavra-passe" minlength="6">
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <button type="submit" class="btn btn-primary" id="btn-salvar">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+          <span>Guardar Alterações do Perfil</span>
+        </button>
+
+        <button type="button" class="btn btn-outline-danger" id="btn-logout">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          <span>Terminar Sessão</span>
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="/index.html" class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Início</span>
+    </a>
+    <a href="/abertura.html" class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      <span>Abertura</span>
+    </a>
+    <a href="/fecho.html" class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 14H8V8h8v8z"/></svg>
+      <span>Fecho</span>
+    </a>
+    <a href="/dashboard.html" class="nav-item">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+      <span>Estatísticas</span>
+    </a>
+    <a href="/perfil.html" class="nav-item active">
+      <svg class="icon nav-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span>Perfil</span>
+    </a>
+  </nav>
+
+  <script src="/js/app.js"></script>
+  <script>
+    async function carregarPerfil() {
+      const res = await CAC.api('/perfil', { method: 'GET' });
+
+      if (!res.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const d = res.data.dados;
+
+      document.getElementById('user-nome').textContent = d.nomeCompleto;
+      document.getElementById('user-avatar').textContent = d.nomeCompleto.charAt(0).toUpperCase();
+      document.getElementById('user-sc-email').textContent = `SC: ${d.numeroSc} • ${d.email}`;
+      document.getElementById('user-perfil').textContent = d.perfil === 'administrador' ? 'Administrador' : 'Operador';
+
+      document.getElementById('nome_completo').value = d.nomeCompleto || '';
+      document.getElementById('telemovel').value = d.telemovel || '';
+      document.getElementById('email').value = d.email || '';
+      document.getElementById('matricula_padrao').value = d.matriculaPadrao || '';
+      document.getElementById('giro_padrao').value = d.giroPadrao || '';
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarPerfil);
+
+    // Logout
+    document.getElementById('btn-logout').addEventListener('click', () => CAC.logout());
+    document.getElementById('btn-header-logout').addEventListener('click', () => CAC.logout());
+
+    // Salvar Perfil
+    const form = document.getElementById('form-perfil');
+    const btnSalvar = document.getElementById('btn-salvar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      CAC.limparAlerta('alerta-container');
+
+      const nome_completo = document.getElementById('nome_completo').value.trim();
+      const telemovel = document.getElementById('telemovel').value.trim();
+      const matricula_padrao = document.getElementById('matricula_padrao').value.trim();
+      const giro_padrao = document.getElementById('giro_padrao').value.trim();
+      const senha_atual = document.getElementById('senha_atual').value;
+      const nova_senha = document.getElementById('nova_senha').value;
+      const confirmar_nova_senha = document.getElementById('confirmar_nova_senha').value;
+
+      if (nova_senha && nova_senha !== confirmar_nova_senha) {
+        CAC.mostrarAlerta('alerta-container', 'A confirmação da nova palavra-passe não coincide.', 'danger');
+        return;
+      }
+
+      btnSalvar.disabled = true;
+      btnSalvar.style.opacity = '0.7';
+
+      const res = await CAC.api('/perfil', {
+        method: 'PUT',
+        body: {
+          nome_completo,
+          telemovel,
+          matricula_padrao,
+          giro_padrao,
+          senha_atual: senha_atual || undefined,
+          nova_senha: nova_senha || undefined,
+          confirmar_nova_senha: confirmar_nova_senha || undefined
+        }
+      });
+
+      btnSalvar.disabled = false;
+      btnSalvar.style.opacity = '1';
+
+      if (res.ok) {
+        CAC.mostrarAlerta('alerta-container', 'Perfil e preferências atualizados com sucesso!', 'success');
+        document.getElementById('senha_atual').value = '';
+        document.getElementById('nova_senha').value = '';
+        document.getElementById('confirmar_nova_senha').value = '';
+        carregarPerfil();
+      } else {
+        CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Ocorreu um erro ao atualizar o perfil.', 'danger');
+      }
+    });
+  </script>
+</body>
+</html>

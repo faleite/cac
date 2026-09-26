@@ -10,48 +10,57 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
 |:---:|---|:---:|:---:|
 | **Fase 1** | Infraestrutura, Docker, Nginx e Estrutura Base | 100% | Concluída / Validada |
 | **Fase 2** | Modelagem de Dados no Prisma, Migrations e PostgreSQL | 100% | Concluída / Validada |
-| **Fase 3** | Autenticação, Sessão, Perfis e Recuperação de Senha | 0% | Próxima |
-| **Fase 4** | Módulo Operador: Abertura, Fecho, Incidências e Rascunho | 0% | Pendente |
+| **Fase 3** | Autenticação, Sessão, Perfis e Recuperação de Senha | 100% | Concluída / Validada |
+| **Fase 4** | Módulo Operador: Abertura, Fecho, Incidências e Rascunho | 0% | Próxima |
 | **Fase 5** | Integração de Partilha e Comunicação com WhatsApp | 0% | Pendente |
 | **Fase 6** | Dashboard de Indicadores, KPIs, Gráficos e Filtros | 0% | Pendente |
 | **Fase 7** | Refinamento UI, Logs de Erro/Segurança e Homologação | 0% | Pendente |
 
-**Progresso Geral Estimado:** ~28% (2 de 7 fases concluídas com validação técnica em banco)
+**Progresso Geral Estimado:** ~43% (3 de 7 fases concluídas e validadas ponta a ponta)
 
 ---
 
-## 2. Fase Concluída em Detalhe: Fase 2 (Modelagem de Dados e Migrations)
+## 2. Fase Concluída em Detalhe: Fase 3 (Autenticação, Sessão, Perfis e Recuperação de Senha)
 
 ### Tarefas Concluídas
-- [x] Adicionadas dependências `pg` e `bcrypt` no `backend/package.json`.
-- [x] Modeladas todas as entidades do FSD no `backend/prisma/schema.prisma`:
-  - `Usuario` (`usuarios`) com soft delete, perfis `operador`/`administrador` e tokens temporários.
-  - `PerfilConfiguracao` (`perfis_configuracao`) com relação 1:1 e cascata para veículo e giro padrão.
-  - `RegistoDiario` (`registos_diarios`) com contadores de incidências, métricas e constraint única por dia (`unq_usuario_data_registo`).
-  - Índices compostos de alta performance: `idx_registos_usuario_data`, `idx_registos_data_status`, `idx_registos_usuario_status`.
-  - `AuditoriaRegisto` (`auditoria_registos`) com campos `JSONB` e relação com usuário e turno.
-  - `LogSeguranca` (`logs_seguranca`) para eventos críticos de segurança.
-  - `AppSessao` (`app_sessoes`) com índice em `expire` para integração com `connect-pg-simple`.
-- [x] Executada migration do Prisma (`20260926183316_init_cac_schema`) criando todas as tabelas, foreign keys e índices no PostgreSQL.
-- [x] Gerado Prisma Client atualizado e singleton em `backend/src/database/prisma.js` com polyfill seguro para serialização JSON de BigInt.
-- [x] Criado e executado script de seed idempotente (`backend/prisma/seed.js`) populando:
-  - Administrador: `admin@cacatividades.pt` (SC-0001) com perfil `administrador`.
-  - Operador: `fabricio@cacatividades.pt` (SC-2825) com perfil `operador` e veículo/giro padrão.
-- [x] Validada integridade relacional, índices e operações no banco com script de teste automatizado (`backend/src/utils/test-db.js`).
-- [x] Validado endpoint `/api/health` respondendo via Nginx com contagem ativa de registros do banco de dados.
+- [x] Instaladas dependências de autenticação, sessão e mensageria no backend: `express-session`, `connect-pg-simple`, `nodemailer`, `bcryptjs`.
+- [x] Configurado armazenamento de sessões persistentes no PostgreSQL via `connect-pg-simple` apontando para a tabela `app_sessoes` com cookies seguros (`cac_session_id`, `httpOnly: true`, `sameSite: 'lax'`, expiração de 8h).
+- [x] Criado utilitário de e-mail com `Nodemailer` (`backend/src/utils/mailer.js`) para recuperação de palavra-passe com template HTML institucional no padrão Postal CTT.
+- [x] Implementados middlewares de segurança:
+  - `backend/src/middlewares/auth.js`: Verificação de autenticação de sessão com suporte a respostas JSON (401) e redirecionamento (302).
+  - `backend/src/middlewares/rbac.js`: Controle de acesso baseado em papéis (`administrador`/`operador`).
+- [x] Implementado `AuthController` (`backend/src/controllers/AuthController.js`):
+  - `POST /api/auth/registo`: Auto-registo forçando impreterivelmente o perfil `operador`, criação de hash bcrypt seguro (10 rounds), criação atômica do perfil de preferências e início de sessão.
+  - `POST /api/auth/login`: Autenticação flexível por Número SC ou E-mail com proteção anti-enumeração.
+  - `POST /api/auth/logout`: Destruição da sessão no PostgreSQL e limpeza do cookie no cliente.
+  - `GET /api/auth/me`: Retorno dos dados do usuário autenticado e preferências vinculadas.
+  - `POST /api/auth/recuperar-senha`: Geração de token criptográfico de 1 hora com resposta neutra anti-enumeração.
+  - `POST /api/auth/redefinir-senha`: Validação de token e expiração, atualização segura de senha com bcrypt.
+- [x] Implementado `PerfilController` (`backend/src/controllers/PerfilController.js`):
+  - `GET /api/perfil`: Consulta de dados pessoais e preferências operacionais.
+  - `PUT /api/perfil`: Atualização atômica de nome, telemóvel, matrícula habitual, código de giro e troca de senha.
+- [x] Desenvolvido Design System CSS local sem CDNs (`frontend/public/css/custom.css`):
+  - Paleta Postal CTT (`#a8001c`, `#d3122a`, `#ffe6e4`), fontes seguras Inter, ergonomia para mobile-first (inputs $\ge 56\text{px}$, botões $\ge 48\text{px}$, bordas arredondadas de 8px).
+- [x] Construídas interfaces web funcionais:
+  - `frontend/public/login.html`: Tela de login com alternância de visibilidade de senha e feedback.
+  - `frontend/public/registo.html`: Tela de auto-registo de colaboradores.
+  - `frontend/public/recuperar-senha.html`: Solicitação de link de recuperação por e-mail.
+  - `frontend/public/redefinir-senha.html`: Formulário de definição de nova palavra-passe com token da URL.
+  - `frontend/public/perfil.html`: Gestão de perfil e preferências habituais com navegação inferior (*BottomNav*).
+  - `frontend/public/index.html`: Roteamento inteligente baseado no status da sessão.
+- [x] Desenvolvido utilitário client-side `frontend/public/js/app.js` para integração HTTP, alertas e autenticação.
+- [x] Criado e executado script de testes automatizados (`backend/src/utils/test-fase3.js`) com 21 asserções cobrindo todos os cenários da fase (100% aprovados).
+- [x] Reconstruídos containers Docker e validados endpoints e páginas através do Nginx (porta 80).
 
 ---
 
-## 3. Próxima Fase: Fase 3 (Autenticação, Sessão, Perfis e Recuperação de Senha)
+## 3. Próxima Fase: Fase 4 (Módulo Operador: Abertura, Fecho, Incidências e Rascunho)
 
 ### Próximos Passos
-1. Instalar dependências adicionais no backend: `express-session`, `connect-pg-simple`, `nodemailer`.
-2. Configurar middleware de sessão persistente no PostgreSQL (`connect-pg-simple` apontando para a tabela `app_sessoes`).
-3. Implementar middlewares de autenticação (`auth.js`) e autorização RBAC (`rbac.js`).
-4. Implementar `AuthController` (auto-registo com perfil restrito a operador, login por SC ou e-mail, logout, me, e recuperação de senha).
-5. Implementar serviço de envio de e-mails de recuperação de senha com `Nodemailer`.
-6. Implementar `PerfilController` para atualização de dados pessoais e preferências (veículo e giro padrão).
-7. Criar as interfaces web correspondentes no frontend conforme o Design System *Postal Utility System*.
+1. Implementar `RegistoController` com endpoints de abertura de turno (Km Inicial, matrícula, giro com preenchimento automático das preferências), validações de consistência e regra de turno único diário por colaborador.
+2. Implementar endpoint de fecho de turno com contadores de objetos entregues, falhas por tipo de incidência, Km Final, cálculo automático de Km Percorridos e validação $Km_{final} \ge Km_{inicial}$.
+3. Implementar contingência de rascunho de digitação no cliente com `draft-storage.js` e `localStorage`.
+4. Construir as telas `abertura.html` e `fecho.html` com controles ergonômicos (+/-) e teclado numérico amigável.
 
 ---
 
@@ -61,3 +70,4 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
 |---|---|---|
 | 2026-09-26 | Arquiteto de Software | Criação do `docs/PLANO.md`, `AGENTS.md`, `docs/STATUS.md` e `docs/ERROS.md`. Validação da Fase 1 (infraestrutura). |
 | 2026-09-26 | Desenvolvedor Sênior | Implementação completa da Fase 2: schema Prisma com 5 entidades + tabela de sessões, índices compostos, migration aplicada no PostgreSQL, seed idempotente com Admin e Operador, e teste automatizado de integridade. |
+| 2026-09-26 | Desenvolvedor Sênior | Implementação completa da Fase 3: autenticação com sessões persistentes em PostgreSQL, RBAC, recuperação de senha com tokens criptográficos, gestão de perfis e preferências, Design System CSS local e 5 telas web funcionais testadas ponta a ponta. |
