@@ -334,6 +334,9 @@
         if (kmFinalVal < kmInicialAtivo) {
           feedbackKm.style.color = 'var(--color-error)';
           feedbackKm.textContent = `Atenção: Km Final menor que o inicial (${kmInicialAtivo}).`;
+        } else if (kmFinalVal === kmInicialAtivo) {
+          feedbackKm.style.color = 'var(--color-error)';
+          feedbackKm.textContent = `Atenção: Km Final igual ao inicial (${kmInicialAtivo}). O percurso deve ser maior que zero.`;
         } else {
           kmPercorridos = kmFinalVal - kmInicialAtivo;
           feedbackKm.style.color = 'var(--color-tertiary)';
@@ -448,8 +451,8 @@
           return;
         }
 
-        if (kmFinalVal < kmInicialAtivo) {
-          CAC.mostrarAlerta('alert-container', `O Km Final (${kmFinalVal}) não pode ser inferior ao Km Inicial informado na abertura (${kmInicialAtivo}).`, 'danger');
+        if (kmFinalVal <= kmInicialAtivo) {
+          CAC.mostrarAlerta('alert-container', `O Km Final (${kmFinalVal}) deve ser superior ao Km Inicial informado na abertura (${kmInicialAtivo}). O percurso percorrido não pode ser zero.`, 'danger');
           document.getElementById('km-final').focus();
           return;
         }

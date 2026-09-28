@@ -101,8 +101,18 @@ async function runTests() {
       qtdObjetos: 100,
       qtdRecolhas: 0
     });
-    assert(!valKmInvalido.valido && valKmInvalido.erros[0].includes('não pode ser inferior ao Km Inicial'),
+    assert(!valKmInvalido.valido && valKmInvalido.erros[0].includes('deve ser superior ao Km Inicial'),
       'validarDadosFecho deve bloquear quando Km Final < Km Inicial com mensagem exata');
+
+    // Teste 1.6.1: Validação Bloqueante Km Final == Km Inicial (Percurso Zero)
+    const valKmIgual = validarDadosFecho({
+      kmInicial: 73200,
+      kmFinal: 73200,
+      qtdObjetos: 100,
+      qtdRecolhas: 0
+    });
+    assert(!valKmIgual.valido && valKmIgual.erros[0].includes('o percurso de km não pode ser zero'),
+      'validarDadosFecho deve bloquear quando Km Final == Km Inicial (percurso zero)');
 
     // Teste 1.7: Validação Bloqueante Incidências > Objetos
     const valIncInvalida = validarDadosFecho({
@@ -204,8 +214,18 @@ async function runTests() {
       qtdObjetos: 100
     });
     await RegistoDiarioController.fecharTurno(reqFcInvalido, resFcInvalido);
-    assert(resFcInvalido.getStatusCode() === 400 && resFcInvalido.getData().mensagem.includes('não pode ser inferior ao Km Inicial'),
+    assert(resFcInvalido.getStatusCode() === 400 && resFcInvalido.getData().mensagem.includes('deve ser superior ao Km Inicial'),
       'fecharTurno rejeita Km Final menor que Km Inicial');
+
+    // Teste 2.5.1: Fecho com Km Final == Km Inicial (Bloqueado - percurso zero)
+    const { req: reqFcIgual, res: resFcIgual } = createMockReqRes(sessionOperador, {
+      registoId: turnoCriadoId,
+      kmFinal: 50100, // igual a 50100
+      qtdObjetos: 100
+    });
+    await RegistoDiarioController.fecharTurno(reqFcIgual, resFcIgual);
+    assert(resFcIgual.getStatusCode() === 400 && resFcIgual.getData().mensagem.includes('o percurso de km não pode ser zero'),
+      'fecharTurno rejeita Km Final igual ao Km Inicial (percurso zero)');
 
     // Teste 2.6: Fecho com Incidências > Objetos (Bloqueado)
     const { req: reqFcIncInvalida, res: resFcIncInvalida } = createMockReqRes(sessionOperador, {

@@ -107,8 +107,8 @@ function validarDadosFecho(dados = {}) {
 
   if (isNaN(kmFinal) || kmFinal < 0) {
     erros.push('O Km Final deve ser informado com um número inteiro válido.');
-  } else if (!isNaN(kmInicial) && kmFinal < kmInicial) {
-    erros.push('O Km Final não pode ser inferior ao Km Inicial informado na abertura.');
+  } else if (!isNaN(kmInicial) && kmFinal <= kmInicial) {
+    erros.push('O Km Final deve ser superior ao Km Inicial informado na abertura (o percurso de km não pode ser zero).');
   }
 
   if (isNaN(qtdObjetos) || qtdObjetos < 0) {

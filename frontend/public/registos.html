@@ -405,6 +405,13 @@
         const kmInicial = parseInt(document.getElementById('edit-km-inicial').value, 10);
         const kmFinalStr = document.getElementById('edit-km-final').value;
         const kmFinal = kmFinalStr !== '' ? parseInt(kmFinalStr, 10) : null;
+
+        if (kmFinal !== null && !isNaN(kmInicial) && kmFinal <= kmInicial) {
+          CAC.mostrarAlerta('modal-alert-container', `O Km Final (${kmFinal}) deve ser superior ao Km Inicial (${kmInicial}). O percurso percorrido não pode ser zero.`, 'danger');
+          document.getElementById('edit-km-final').focus();
+          return;
+        }
+
         const matriculaDia = document.getElementById('edit-matricula').value.trim().toUpperCase();
         const giroDia = document.getElementById('edit-giro').value.trim().toUpperCase();
         const qtdObjetos = parseInt(document.getElementById('edit-objetos').value || 0, 10);
@@ -414,6 +421,12 @@
         const qtdEndInsuficiente = parseInt(document.getElementById('edit-end-insuf').value || 0, 10);
         const qtdRecusados = parseInt(document.getElementById('edit-recusados').value || 0, 10);
         const qtdDescMorada = parseInt(document.getElementById('edit-desc-morada').value || 0, 10);
+
+        const totalIncEdicao = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
+        if (totalIncEdicao > qtdObjetos) {
+          CAC.mostrarAlerta('modal-alert-container', 'A soma das incidências (não entregues) não pode ser maior do que a Quantidade Total de Objetos.', 'danger');
+          return;
+        }
 
         const btnSalvar = document.getElementById('btn-salvar-edicao');
         btnSalvar.disabled = true;
