@@ -325,7 +325,8 @@ body {
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.nav-item {
+.nav-item,
+.bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -340,17 +341,23 @@ body {
   transition: color 0.15s ease;
 }
 
-.nav-item.active {
+.nav-item.active,
+.bottom-nav-item.active {
   color: var(--color-primary);
 }
 
-.nav-icon {
+.nav-icon,
+.bottom-nav-icon {
+  width: 22px;
+  height: 22px;
   font-size: 22px;
   margin-bottom: 2px;
+  fill: currentColor;
 }
 
 /* Ícones de SVG Inline e Utilitários */
-.icon {
+.icon,
+.brand-icon {
   display: inline-block;
   width: 20px;
   height: 20px;
