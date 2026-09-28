@@ -64,8 +64,11 @@
         <form id="form-abertura" class="form-flow" novalidate>
           
           <div class="form-group">
-            <label for="data-hoje" class="form-label">Data de Operação</label>
-            <input type="text" id="data-hoje" class="form-control" disabled style="background-color: var(--color-surface-container-low); color: var(--color-secondary); font-weight: 600;">
+            <label for="data-registo" class="form-label">Data de Operação <span style="color: var(--color-primary);">*</span></label>
+            <input type="date" id="data-registo" name="dataRegisto" class="form-control" required style="font-weight: 600;">
+            <small style="color: var(--color-secondary); font-size: 12px; margin-top: 4px; display: block;">
+              Preenchido por defeito com a data atual. Altere caso pretenda registar um dia anterior.
+            </small>
           </div>
 
           <div class="form-group">
@@ -151,56 +154,90 @@
         btnLogout.addEventListener('click', () => CAC.logout());
       }
 
-      // Formatar data de hoje para exibição amigável
+      // Preenchimento da data de hoje por defeito (YYYY-MM-DD)
+      const inputDataRegisto = document.getElementById('data-registo');
       const hoje = new Date();
-      const options = { day: '2-digit', month: 'long', year: 'numeric' };
-      document.getElementById('data-hoje').value = hoje.toLocaleDateString('pt-PT', options);
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const hojeISO = `${ano}-${mes}-${dia}`;
+
+      if (!inputDataRegisto.value) {
+        inputDataRegisto.value = hojeISO;
+      }
+      inputDataRegisto.max = hojeISO;
 
       // 2. Consultar estado operacional do dia
       const estadoRes = await CAC.api('/registos/estado-atual');
       let preferencias = { matriculaPadrao: '', giroPadrao: '' };
+      let dadosEstado = null;
+
+      function aplicarEstadoVisual(dataSelecionada) {
+        const alertaStatusHoje = document.getElementById('alerta-status-hoje');
+        const btnIniciar = document.getElementById('btn-iniciar-turno');
+
+        if (!dadosEstado) return;
+
+        if (dataSelecionada === hojeISO) {
+          if (dadosEstado.statusDia === 'aberto') {
+            const reg = dadosEstado.registoHoje;
+            document.getElementById('texto-status-hoje').innerHTML = 
+              `<strong>Turno de hoje já iniciado!</strong> (Km Inicial: ${reg.kmInicial}, Matrícula: ${reg.matriculaDia})`;
+            document.getElementById('link-acao-status').textContent = 'Continuar para o Fecho';
+            document.getElementById('link-acao-status').href = '/fecho.html';
+            alertaStatusHoje.style.display = 'block';
+
+            btnIniciar.disabled = true;
+            btnIniciar.style.opacity = '0.6';
+            btnIniciar.innerHTML = '<span>Turno Já Aberto Hoje (Ver Fecho)</span>';
+            btnIniciar.onclick = () => { window.location.href = '/fecho.html'; };
+          } else if (dadosEstado.statusDia === 'fechado') {
+            document.getElementById('texto-status-hoje').innerHTML = 
+              `<strong>Turno de hoje já concluído e fechado!</strong>`;
+            document.getElementById('link-acao-status').textContent = 'Ver Histórico';
+            document.getElementById('link-acao-status').href = '/registos.html';
+            alertaStatusHoje.style.display = 'block';
+
+            btnIniciar.disabled = true;
+            btnIniciar.style.opacity = '0.6';
+            btnIniciar.innerHTML = '<span>Turno de Hoje Concluído</span>';
+            btnIniciar.onclick = () => { window.location.href = '/registos.html'; };
+          } else {
+            alertaStatusHoje.style.display = 'none';
+            btnIniciar.disabled = false;
+            btnIniciar.style.opacity = '1';
+            btnIniciar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Guardar e Iniciar Turno</span>';
+            btnIniciar.onclick = null;
+          }
+        } else {
+          // Data selecionada é anterior a hoje
+          alertaStatusHoje.style.display = 'none';
+          btnIniciar.disabled = false;
+          btnIniciar.style.opacity = '1';
+          btnIniciar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span>Guardar e Iniciar Turno</span>';
+          btnIniciar.onclick = null;
+        }
+      }
 
       if (estadoRes.ok && estadoRes.data && estadoRes.data.dados) {
-        const dados = estadoRes.data.dados;
-        preferencias = dados.preferencias || preferencias;
+        dadosEstado = estadoRes.data.dados;
+        preferencias = dadosEstado.preferencias || preferencias;
 
         // Tratar pendência de dia anterior
-        if (dados.pendenciaAnterior && dados.registoPendente) {
-          const pend = dados.registoPendente;
+        if (dadosEstado.pendenciaAnterior && dadosEstado.registoPendente) {
+          const pend = dadosEstado.registoPendente;
           const dataPend = pend.dataRegisto;
           document.getElementById('texto-pendencia').textContent = 
             `O turno iniciado em ${dataPend} (Viatura: ${pend.matriculaDia}, Km Inicial: ${pend.kmInicial}) ainda não foi encerrado.`;
           document.getElementById('alerta-pendencia').style.display = 'block';
         }
 
-        // Tratar status de hoje
-        if (dados.statusDia === 'aberto') {
-          const reg = dados.registoHoje;
-          document.getElementById('texto-status-hoje').innerHTML = 
-            `<strong>Turno de hoje já iniciado!</strong> (Km Inicial: ${reg.kmInicial}, Matrícula: ${reg.matriculaDia})`;
-          document.getElementById('link-acao-status').textContent = 'Continuar para o Fecho';
-          document.getElementById('link-acao-status').href = '/fecho.html';
-          document.getElementById('alerta-status-hoje').style.display = 'block';
-          
-          // Desabilita botão de abertura para evitar confusão
-          const btnIniciar = document.getElementById('btn-iniciar-turno');
-          btnIniciar.disabled = true;
-          btnIniciar.style.opacity = '0.6';
-          btnIniciar.innerHTML = '<span>Turno Já Aberto (Ver Fecho)</span>';
-          btnIniciar.onclick = () => { window.location.href = '/fecho.html'; };
-        } else if (dados.statusDia === 'fechado') {
-          document.getElementById('texto-status-hoje').innerHTML = 
-            `<strong>Turno de hoje já concluído e fechado!</strong>`;
-          document.getElementById('link-acao-status').textContent = 'Ver Histórico';
-          document.getElementById('link-acao-status').href = '/registos.html';
-          document.getElementById('alerta-status-hoje').style.display = 'block';
-
-          const btnIniciar = document.getElementById('btn-iniciar-turno');
-          btnIniciar.disabled = true;
-          btnIniciar.style.opacity = '0.6';
-          btnIniciar.innerHTML = '<span>Turno do Dia Concluído</span>';
-        }
+        aplicarEstadoVisual(inputDataRegisto.value);
       }
+
+      inputDataRegisto.addEventListener('change', () => {
+        aplicarEstadoVisual(inputDataRegisto.value);
+      });
 
       // Pré-preenchimento das preferências do perfil (caso campo esteja vazio)
       const inputMatricula = document.getElementById('matricula-dia');
@@ -221,6 +258,7 @@
         e.preventDefault();
         CAC.limparAlerta('alert-container');
 
+        const dataRegistoVal = inputDataRegisto.value || hojeISO;
         const kmInicial = parseInt(document.getElementById('km-inicial').value, 10);
         const matriculaDia = inputMatricula.value.trim().toUpperCase();
         const giroDia = inputGiro.value.trim().toUpperCase();
@@ -250,6 +288,7 @@
         const res = await CAC.api('/registos/abertura', {
           method: 'POST',
           body: {
+            dataRegisto: dataRegistoVal,
             kmInicial,
             matriculaDia,
             giroDia

@@ -177,7 +177,7 @@ async function runTests() {
     assert(dataEst1.dados.preferencias.matriculaPadrao === '44-XX-88',
       'obterEstadoAtual pré-carrega matriculaPadrao do perfil');
 
-    // Teste 2.2: Abertura de Turno com Sucesso
+    // Teste 2.2: Abertura de Turno com Sucesso (Data Atual Padrão)
     const { req: reqAb, res: resAb } = createMockReqRes(sessionOperador, {
       kmInicial: 50100,
       matriculaDia: '44-XX-88',
@@ -187,6 +187,18 @@ async function runTests() {
     const dataAb = resAb.getData();
     assert(resAb.getStatusCode() === 201 && dataAb.dados.status === 'aberto' && dataAb.dados.kmInicial === 50100,
       'abrirTurno cria turno com status "aberto" e Km Inicial correto');
+
+    // Teste 2.2.1: Abertura de Turno com Data Anterior Específica (Data Personalizada)
+    const { req: reqAbPassado, res: resAbPassado } = createMockReqRes(sessionOperador, {
+      dataRegisto: '2026-09-20',
+      kmInicial: 49800,
+      matriculaDia: '44-XX-88',
+      giroDia: '9900H'
+    });
+    await RegistoDiarioController.abrirTurno(reqAbPassado, resAbPassado);
+    const dataAbPassado = resAbPassado.getData();
+    assert(resAbPassado.getStatusCode() === 201 && dataAbPassado.dados.dataRegisto === '2026-09-20',
+      'abrirTurno com dataRegisto personalizada grava exatamente a data de dia anterior');
 
     const turnoCriadoId = dataAb.dados.id;
 

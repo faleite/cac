@@ -19,13 +19,17 @@ const {
  */
 function normalizarData(dataInput) {
   if (dataInput) {
+    if (typeof dataInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dataInput.trim())) {
+      const [ano, mes, dia] = dataInput.trim().split('-').map(Number);
+      return new Date(Date.UTC(ano, mes - 1, dia, 0, 0, 0));
+    }
     const d = new Date(dataInput);
     if (!isNaN(d.getTime())) {
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0));
     }
   }
   const hoje = new Date();
-  return new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), hoje.getUTCDate(), 0, 0, 0));
 }
 
 /**
