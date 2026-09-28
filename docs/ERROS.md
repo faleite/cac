@@ -13,6 +13,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-003** | 2026-09-28 | Frontend / Cabeçalho e UI | Imagem do cabeçalho desconfigurada (SVG gigante), sobreposição do texto e botão de logout inoperante em `abertura.html`, `fecho.html` e `registos.html`. | Estrutura HTML do cabeçalho divergente da especificação de `perfil.html`, com classes de SVG não dimensionadas e IDs de logout desincronizados. | Padronização integral da estrutura de cabeçalho com `brand-title`, SVG `.icon` (20x20px vermelho CTT), botão `#btn-header-logout` com classe `.link` e vinculação reativa no script `CAC.logout()`. | **Resolvido** |
 | **ERR-004** | 2026-09-28 | Backend & Frontend / Validação | Submissão de fecho permitindo Km Final igual ao Km Inicial (percurso de 0 km). | Validação verificava apenas se `kmFinal < kmInicial`, aceitando igualdade como válida. | Atualizada a validação no backend (`calculos.js`) e no frontend (`fecho.html`, `registos.html`) para exigir estritamente `kmFinal > kmInicial`, bloqueando `kmFinal <= kmInicial` com mensagem explicativa e feedback visual ao vivo. | **Resolvido** |
 | **ERR-005** | 2026-09-28 | Frontend / Abertura de Turno | Campo "Data de Operação" bloqueado com atributo `disabled`, impedindo o registo retroativo de dias anteriores. | O campo de data estava fixado como texto somente leitura (`disabled`), sem permitir edição e sem enviar o campo `dataRegisto` no payload de abertura. | Campo atualizado para `<input type="date">` editável preenchido por defeito com a data atual (`YYYY-MM-DD`), envio de `dataRegisto` no POST de abertura, normalização UTC no backend e reatividade do botão de início ao selecionar datas anteriores. | **Resolvido** |
+| **ERR-006** | 2026-09-28 | Frontend / UI Registos | Botão "+ Novo Turno" visualmente colado à barra de filtros ("Todos", "Fechados", "Abertos"). | Falta de margem inferior específica (`margin-bottom`) no botão de ação e espaçamento insuficiente com o grupo de botões de filtro. | Ajustado o layout em `registos.html` com espaçamento preciso de ~8px (~2mm) entre o botão de novo turno e o container de filtros. | **Resolvido** |
 
 ---
 
@@ -42,6 +43,11 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 - **Contexto:** No ecrã de abertura de turno (`abertura.html`), o campo "Data de Operação" estava marcado com `disabled`, impedindo que o operador registasse turnos de dias passados que porventura tivessem ficado sem envio.
 - **Impacto:** Impossibilidade de regularizar registos de dias anteriores.
 - **Resolução:** O campo foi modificado para `<input type="date">` com valor padrão preenchido com a data atual e limite máximo de hoje. O script de frontend foi atualizado para despachar o parâmetro `dataRegisto` no corpo da requisição e reagir visualmente quando uma data anterior é escolhida, permitindo o registo retroativo. O backend teve a função `normalizarData` aprimorada para manipulação estritamente UTC de datas no formato `YYYY-MM-DD`.
+
+### Caso ERR-006: Espaçamento entre Botão de Novo Turno e Filtros
+- **Contexto:** Em `registos.html`, o botão "+ Novo Turno" estava visualmente muito próximo / colado aos botões de filtro de status ("Todos", "Fechados", "Abertos").
+- **Impacto:** Percepção visual desconfortável na interface mobile e desktop.
+- **Resolução:** Adicionado espaçamento visual sutil e equilibrado (~8px / ~2mm) entre a área do cabeçalho de ações e a linha de botões de filtro.
 
 ---
 
