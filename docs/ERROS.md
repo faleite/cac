@@ -14,6 +14,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-004** | 2026-09-28 | Backend & Frontend / Validação | Submissão de fecho permitindo Km Final igual ao Km Inicial (percurso de 0 km). | Validação verificava apenas se `kmFinal < kmInicial`, aceitando igualdade como válida. | Atualizada a validação no backend (`calculos.js`) e no frontend (`fecho.html`, `registos.html`) para exigir estritamente `kmFinal > kmInicial`, bloqueando `kmFinal <= kmInicial` com mensagem explicativa e feedback visual ao vivo. | **Resolvido** |
 | **ERR-005** | 2026-09-28 | Frontend / Abertura de Turno | Campo "Data de Operação" bloqueado com atributo `disabled`, impedindo o registo retroativo de dias anteriores. | O campo de data estava fixado como texto somente leitura (`disabled`), sem permitir edição e sem enviar o campo `dataRegisto` no payload de abertura. | Campo atualizado para `<input type="date">` editável preenchido por defeito com a data atual (`YYYY-MM-DD`), envio de `dataRegisto` no POST de abertura, normalização UTC no backend e reatividade do botão de início ao selecionar datas anteriores. | **Resolvido** |
 | **ERR-006** | 2026-09-28 | Frontend / UI Registos | Botão "+ Novo Turno" visualmente colado à barra de filtros ("Todos", "Fechados", "Abertos"). | Falta de margem inferior específica (`margin-bottom`) no botão de ação e espaçamento insuficiente com o grupo de botões de filtro. | Ajustado o layout em `registos.html` com espaçamento preciso de ~8px (~2mm) entre o botão de novo turno e o container de filtros. | **Resolvido** |
+| **ERR-007** | 2026-09-29 | Backend / Formatters | Campos de incidências zeradas exibindo `**` em vez de `*0*` na mensagem do WhatsApp em `confirmar-whatsapp.html`. | A função `formatarIncidenciaValor` retornava `**` para valores zero ou nulos. | Atualizada a função em `backend/src/utils/formatters.js` para retornar `*0*` quando a quantidade for zero/nula e atualizados os testes automatizados em `test-fase5.js`. | **Resolvido** |
 
 ---
 
@@ -37,7 +38,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 ### Caso ERR-004: Validação de Quilometragem Não Nula no Fecho
 - **Contexto:** No ecrã de fecho de turno (`fecho.html`), ao informar o Km Final com o mesmo valor do Km Inicial (ex: 123 e 123), o sistema aceitava o fecho com percurso de 0 km.
 - **Impacto:** Possibilidade de registar fecho sem quilometragem percorrida no turno.
-- **Resolução:** A validação foi reforçada em todas as camadas (backend em `src/utils/calculos.js` e frontend em `fecho.html` e `registos.html`), rejeitando qualquer valor onde `kmFinal <= kmInicial` e informando que o Km Final deve ser estritamente superior ao Km Inicial e que o percurso não pode ser zero. Foram adicionados testes unitários e de integração na suíte automatizada.
+- **Resolução:** A validação foi reforçada em todas as camadas (backend em `src/utils/calculos.js` e frontend em `fecho.html` e `registos.html`), rejeitando qualquer valor onde `kmFinal <= kmInicial` e informando que o Km Final deve ser estritamente superior ao Km Inicial e que el percurso não pode ser zero. Foram adicionados testes unitários e de integração na suíte automatizada.
 
 ### Caso ERR-005: Campo de Data Bloqueado na Abertura de Turno
 - **Contexto:** No ecrã de abertura de turno (`abertura.html`), o campo "Data de Operação" estava marcado com `disabled`, impedindo que o operador registasse turnos de dias passados que porventura tivessem ficado sem envio.
@@ -48,6 +49,11 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 - **Contexto:** Em `registos.html`, o botão "+ Novo Turno" estava visualmente muito próximo / colado aos botões de filtro de status ("Todos", "Fechados", "Abertos").
 - **Impacto:** Percepção visual desconfortável na interface mobile e desktop.
 - **Resolução:** Adicionado espaçamento visual sutil e equilibrado (~8px / ~2mm) entre a área do cabeçalho de ações e a linha de botões de filtro.
+
+### Caso ERR-007: Formatação de Incidências Zeradas no Relatório WhatsApp
+- **Contexto:** Na página de partilha `confirmar-whatsapp.html?id=32`, os campos de incidência sem ocorrências eram exibidos como `Qtd Avisados: **`.
+- **Impacto:** Inconsistência na mensagem gerada, que deve exibir `*0*` para contagens zeradas.
+- **Resolução:** A função `formatarIncidenciaValor` em `backend/src/utils/formatters.js` foi corrigida para retornar `*${val}*` para qualquer valor $\ge 0$ (formatando valores zerados ou ausentes como `*0*`). A suíte de testes `test-fase5.js` foi atualizada e executada com 100% de sucesso.
 
 ---
 

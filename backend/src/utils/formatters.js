@@ -25,17 +25,18 @@ function formatarDataPostal(dataInput) {
 }
 
 /**
- * Formata quantidade de incidência: *N* se > 0, ou ** se 0 ou nula
+ * Formata quantidade de incidência: *N* para qualquer valor >= 0 (*0* caso zero, nula ou indef)
  * @param {number|null|undefined} qtd 
  * @returns {string}
  */
 function formatarIncidenciaValor(qtd) {
   const val = parseInt(qtd, 10);
-  if (!isNaN(val) && val > 0) {
+  if (!isNaN(val) && val >= 0) {
     return `*${val}*`;
   }
-  return '**';
+  return '*0*';
 }
+
 
 /**
  * Gera a mensagem oficial do WhatsApp no formato exato da empresa

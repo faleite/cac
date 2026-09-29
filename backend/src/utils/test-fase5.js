@@ -53,13 +53,13 @@ function testarUnitariosFormatters() {
   assert.strictEqual(data1, '10/08/2026', 'Data 2026-08-10 deve ser 10/08/2026');
   console.log('  ✅ [PASSOU] Formatação de Data Postal validada: 10/08/2026');
 
-  // Valores de Incidência ( > 0 -> *N*, 0/null -> ** )
+  // Valores de Incidência ( > 0 -> *N*, 0/null/undefined -> *0* )
   assert.strictEqual(formatarIncidenciaValor(1), '*1*');
   assert.strictEqual(formatarIncidenciaValor(3), '*3*');
-  assert.strictEqual(formatarIncidenciaValor(0), '**');
-  assert.strictEqual(formatarIncidenciaValor(null), '**');
-  assert.strictEqual(formatarIncidenciaValor(undefined), '**');
-  console.log('  ✅ [PASSOU] Formatação de Valores de Incidência validada (*N* vs **)');
+  assert.strictEqual(formatarIncidenciaValor(0), '*0*');
+  assert.strictEqual(formatarIncidenciaValor(null), '*0*');
+  assert.strictEqual(formatarIncidenciaValor(undefined), '*0*');
+  console.log('  ✅ [PASSOU] Formatação de Valores de Incidência validada (*N* vs *0*)');
 
   // Estrutura Completa do Modelo Oficial
   const mockRegisto = {
@@ -92,9 +92,10 @@ function testarUnitariosFormatters() {
   assert(msg.includes('Qtd Objectos: *159*'), 'Deve conter Qtd Objectos');
   assert(msg.includes('Qtd Avisados: *1*'), 'Qtd Avisados deve ser *1*');
   assert(msg.includes('Qtd Retornos: *3*'), 'Qtd Retornos deve ser *3*');
-  assert(msg.includes('Qtd End. Insuf.: **'), 'Qtd End. Insuf. zero deve ser **');
-  assert(msg.includes('Qtd Recusados: **'), 'Qtd Recusados zero deve ser **');
+  assert(msg.includes('Qtd End. Insuf.: *0*'), 'Qtd End. Insuf. zero deve ser *0*');
+  assert(msg.includes('Qtd Recusados: *0*'), 'Qtd Recusados zero deve ser *0*');
   assert(msg.includes('Qtd desc morada.: *1*'), 'Qtd desc morada deve ser *1*');
+
 
   console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial CTT');
 }
