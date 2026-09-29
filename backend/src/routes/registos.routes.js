@@ -23,10 +23,14 @@ router.post('/fecho', RegistoDiarioController.fecharTurno);
 // 4. Listagem de histórico de turnos
 router.get('/', RegistoDiarioController.listarRegistos);
 
-// 5. Detalhes de um turno específico por ID (com auditoria)
+// 5. Pré-visualização formatada do relatório WhatsApp
+router.get('/:id/whatsapp-preview', RegistoDiarioController.obterWhatsappPreview);
+
+// 6. Detalhes de um turno específico por ID (com auditoria)
 router.get('/:id', RegistoDiarioController.obterPorId);
 
-// 6. Edição de turno com justificativa e auditoria obrigatória
+// 7. Edição de turno com justificativa e auditoria obrigatória
 router.put('/:id', RegistoDiarioController.editarRegisto);
+
 
 module.exports = router;

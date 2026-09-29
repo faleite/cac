@@ -11,6 +11,7 @@ const {
   calcularKmPercorridos,
   validarDadosFecho
 } = require('../utils/calculos');
+const { gerarMensagemWhatsapp } = require('../utils/formatters');
 
 /**
  * Função utilitária para obter a data no formato Date (sem horas, fuso seguro)
@@ -696,6 +697,66 @@ class RegistoDiarioController {
       });
     }
   }
+
+  /**
+   * Gera a pré-visualização da mensagem do WhatsApp para um turno específico
+   * GET /api/registos/:id/whatsapp-preview
+   */
+  static async obterWhatsappPreview(req, res) {
+    try {
+      const { id } = req.params;
+      const usuarioSessao = req.session.usuario;
+
+      const registo = await prisma.registoDiario.findUnique({
+        where: { id: BigInt(id) },
+        include: {
+          usuario: {
+            select: {
+              id: true,
+              nomeCompleto: true,
+              numeroSc: true,
+              telemovel: true
+            }
+          }
+        }
+      });
+
+      if (!registo) {
+        return res.status(404).json({
+          status: 'erro',
+          mensagem: 'Registo diário não encontrado para geração da mensagem.'
+        });
+      }
+
+      // Validação de acesso RBAC: Operador só vê o seu; Admin vê qualquer um
+      if (usuarioSessao.perfil === 'operador' && registo.usuarioId.toString() !== usuarioSessao.id.toString()) {
+        return res.status(403).json({
+          status: 'erro',
+          mensagem: 'Acesso negado à mensagem do relatório de outro colaborador.'
+        });
+      }
+
+      const textoMensagem = gerarMensagemWhatsapp(registo);
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(textoMensagem)}`;
+
+      return res.json({
+        status: 'sucesso',
+        dados: {
+          registoId: registo.id.toString(),
+          dataRegisto: registo.dataRegisto.toISOString().split('T')[0],
+          textoMensagem,
+          whatsappUrl
+        }
+      });
+    } catch (error) {
+      console.error('[ERRO OBTER WHATSAPP PREVIEW]', error);
+      return res.status(500).json({
+        status: 'erro',
+        mensagem: 'Ocorreu um erro interno ao gerar a mensagem do WhatsApp.'
+      });
+    }
+  }
 }
 
 module.exports = RegistoDiarioController;
+

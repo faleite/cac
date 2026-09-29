@@ -491,13 +491,14 @@
         if (res.ok) {
           // Limpa rascunho de fecho
           CACDraftStorage.limpar('form-fecho');
-          CAC.mostrarAlerta('alert-container', 'Turno encerrado com sucesso! Métricas calculadas.', 'success');
+          CAC.mostrarAlerta('alert-container', 'Turno encerrado com sucesso! A redirecionar para partilha...', 'success');
           
+          const registoId = res.data && res.data.dados ? res.data.dados.id : turnoAtivoId;
           setTimeout(() => {
-            // Na Fase 4, direciona para a listagem/detalhes dos registos
-            window.location.href = '/registos.html';
-          }, 1200);
+            window.location.href = `/confirmar-whatsapp.html?id=${registoId}`;
+          }, 1000);
         } else {
+
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = '<span>Finalizar Turno e Gerar Relatório</span>';
           CAC.mostrarAlerta('alert-container', res.data.mensagem || 'Falha ao encerrar turno.', 'danger');
