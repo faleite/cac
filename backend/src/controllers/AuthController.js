@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const prisma = require('../database/prisma');
+const config = require('../config');
 const { enviarEmailRecuperacao } = require('../utils/mailer');
 
 const SALT_ROUNDS = 10;
@@ -291,12 +292,13 @@ class AuthController {
           }
         });
 
-        // Montar a URL base da requisição
-        const protocolo = req.protocol;
-        const host = req.get('host');
-        const hostBaseUrl = `${protocolo}://${host}`;
+        // Montar a URL base da requisição (prioriza APP_URL do .env)
+        const hostBaseUrl = config.appUrl || `${req.protocol}://${req.get('host')}`;
 
-        await enviarEmailRecuperacao(usuario.email, usuario.nomeCompleto, token, hostBaseUrl);
+        const resultadoEnvio = await enviarEmailRecuperacao(usuario.email, usuario.nomeCompleto, token, hostBaseUrl);
+        if (!resultadoEnvio.sucesso) {
+          console.warn('[AVISO RECUPERAR SENHA] Falha no disparo do e-mail:', resultadoEnvio.erro);
+        }
       }
 
       // Resposta genérica para evitar enumeração de utilizadores (FSD Seção 12.3)

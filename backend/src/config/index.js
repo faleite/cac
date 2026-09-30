@@ -44,9 +44,10 @@ module.exports = {
     password: dbPassword,
     database: dbName
   },
+  appUrl: process.env.APP_URL || '',
   email: {
-    host: process.env.SMTP_HOST || 'sandbox.smtp.mailtrap.io',
-    port: parseInt(process.env.SMTP_PORT || '2525', 10),
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     from: process.env.EMAIL_FROM || 'no-reply@cacatividades.pt'

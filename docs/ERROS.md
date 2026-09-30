@@ -16,6 +16,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-006** | 2026-09-28 | Frontend / UI Registos | Botão "+ Novo Turno" visualmente colado à barra de filtros ("Todos", "Fechados", "Abertos"). | Falta de margem inferior específica (`margin-bottom`) no botão de ação e espaçamento insuficiente com o grupo de botões de filtro. | Ajustado o layout em `registos.html` com espaçamento preciso de ~8px (~2mm) entre o botão de novo turno e o container de filtros. | **Resolvido** |
 | **ERR-007** | 2026-09-29 | Backend / Formatters | Campos de incidências zeradas exibindo `**` em vez de `*0*` na mensagem do WhatsApp em `confirmar-whatsapp.html`. | A função `formatarIncidenciaValor` retornava `**` para valores zero ou nulos. | Atualizada a função em `backend/src/utils/formatters.js` para retornar `*0*` quando a quantidade for zero/nula e atualizados os testes automatizados em `test-fase5.js`. | **Resolvido** |
 | **ERR-008** | 2026-09-30 | Frontend / Rascunho & Sincronização | Matrícula em `abertura.html` não atualizava após alteração de matrícula padrão em `perfil.html`. | O rascunho local (`localStorage`) de `abertura.html` sobrescrevia o campo com o valor antigo do rascunho e `perfil.html` não invalidava o rascunho ao salvar. | Limpeza automática do rascunho de abertura ao salvar perfil, sincronização inteligente diferenciando preferência de personalização manual e restauração em blur de campo vazio. | **Resolvido** |
+| **ERR-009** | 2026-09-30 | Backend / E-mail Transacional Brevo | Formato inválido de `EMAIL_FROM` (preenchido com hostname) e link de recuperação expondo porta interna. | Variável `EMAIL_FROM` configurada como `smtp-relay.brevo.com` em vez de e-mail de remetente verificado; falta de `APP_URL` para links via proxy reverso. | Correção de `EMAIL_FROM` no `.env` para e-mail verificado da conta, adição de `APP_URL=http://localhost`, suporte a porta 587/465 com timeouts no `mailer.js` e criação do script `test-email.js`. | **Resolvido** |
 
 ---
 
@@ -67,6 +68,15 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   1. Em `perfil.html`, incluído `draft-storage.js` e adicionada chamada `CACDraftStorage.limpar('form-abertura')` imediatamente após a resposta de sucesso de atualização do perfil.
   2. Em `abertura.html`, o script foi refatorado para conectar o rascunho antes e verificar se houve customização manual (`customMatricula` / `customGiro`). Se o campo estiver vazio ou não for customizado, assume imediatamente as novas preferências do perfil.
   3. Adicionados listeners de `input` para marcar customização manual caso o operador digite uma viatura diferente, `blur` para repor automaticamente a matrícula/giro padrão se o campo for apagado, e suporte a `pageshow` para evitar cache obsoleto do navegador (bfcache).
+
+### Caso ERR-009: Configuração de Remetente (EMAIL_FROM) e Resolução de URL para Brevo
+- **Contexto:** Ao configurar o envio de e-mails transacionais com Brevo, o parâmetro `EMAIL_FROM` no `.env` foi inadvertidamente preenchido com o host do relay (`smtp-relay.brevo.com`) em vez de um endereço de e-mail de remetente validado, e o link de recuperação montava `http://localhost:3000/...` em vez de utilizar o roteamento do proxy reverso Nginx (`http://localhost/...`).
+- **Impacto:** O provedor SMTP do Brevo rejeita envios onde o remetente não seja um e-mail válido e verificado com erro `550 Sender address not verified`, e os links gerados no e-mail apontariam para portas internas não expostas ao usuário final.
+- **Resolução:**
+  1. No `.env` e `.env.example`, o campo `EMAIL_FROM` foi devidamente documentado e configurado com um endereço de e-mail válido (`devfaleite@gmail.com`), e adicionada a variável `APP_URL=http://localhost`.
+  2. Em `backend/src/config/index.js`, adicionado suporte a `APP_URL` e padrões otimizados para Brevo (porta 587 STARTTLS / 465 SSL).
+  3. Em `backend/src/utils/mailer.js`, implementada detecção de porta segura, timeouts de conexão e a função `verificarConexaoSMTP()`.
+  4. Criado script CLI de validação `backend/src/utils/test-email.js` para teste de conexão SMTP e disparo controlado de teste com retorno de Message ID.
 
 ---
 

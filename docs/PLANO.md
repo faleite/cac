@@ -42,10 +42,10 @@ Garantir que a orquestração via Docker Compose, o banco de dados PostgreSQL 16
 - [x] Configuração do `backend/Dockerfile` com Node 20 Alpine, OpenSSL e hot-reload via `nodemon`.
 - [x] Configuração do `frontend/Dockerfile` com Nginx Alpine e `nginx.conf` atuando como Reverse Proxy para `/api/` e servidor de estáticos.
 - [x] Configuração inicial do `.env` com parâmetros de banco e porta.
-- [ ] Complementar o `.env` e criar `.env.example` com variáveis de sessão (`SESSION_SECRET`), ambiente (`NODE_ENV`) e transporte de e-mail (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`).
-- [ ] Atualizar `docker-compose.yml` para injetar o arquivo `.env` integralmente no serviço backend (`env_file: .env`).
-- [ ] Organizar a árvore de diretórios base no backend (`src/config/`, `src/controllers/`, `src/middlewares/`, `src/routes/`, `src/utils/`) e frontend (`public/css/`, `public/js/`, `public/images/`).
-- [ ] Validar a rota `/api/health` através do proxy reverso (`http://localhost/api/health`).
+- [x] Complementar o `.env` e criar `.env.example` com variáveis de sessão (`SESSION_SECRET`), ambiente (`NODE_ENV`), URL (`APP_URL`) e transporte de e-mail Brevo (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`).
+- [x] Atualizar `docker-compose.yml` para injetar o arquivo `.env` integralmente no serviço backend (`env_file: .env`).
+- [x] Organizar a árvore de diretórios base no backend (`src/config/`, `src/controllers/`, `src/middlewares/`, `src/routes/`, `src/utils/`) e frontend (`public/css/`, `public/js/`, `public/images/`).
+- [x] Validar a rota `/api/health` através do proxy reverso (`http://localhost/api/health`).
 
 #### Critérios de Pronto (Definition of Done)
 1. Todos os 3 containers (`cac_db`, `cac_backend`, `nginx_frontend`) sobem sem falhas via `docker compose up -d`.
