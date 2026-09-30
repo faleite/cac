@@ -30,6 +30,9 @@ function diagnosticarErroBrevo(mensagemErro) {
   if (mensagemErro.includes('535') || mensagemErro.toLowerCase().includes('authentication failed')) {
     return "Falha de autenticação SMTP (535). A causa habitual no Brevo é que 'SMTP_USER' no .env foi preenchido com o seu e-mail pessoal. No painel Brevo (menu 'SMTP & API' -> aba 'SMTP'), copie o valor exato do campo 'Login' (frequentemente no formato '1234567@smtp-brevo.com' ou similar) e a chave SMTP em 'SMTP_PASS'.";
   }
+  if (mensagemErro.includes('525') || mensagemErro.toLowerCase().includes('unauthorized ip address')) {
+    return "IP não autorizado no Brevo (525). Existe uma restrição de IP ativa nas configurações de segurança ou na chave SMTP da sua conta Brevo. Para corrigir: no painel Brevo, aceda a 'Segurança' ou 'SMTP & API' e desative a restrição de IP (recomendado em desenvolvimento) ou adicione o seu IP público atual.";
+  }
   if (mensagemErro.includes('550') || mensagemErro.toLowerCase().includes('sender address not verified')) {
     return "Remetente não verificado (550). O endereço definido em 'EMAIL_FROM' no .env deve estar verificado na seção 'Senders, Domains & Dedicated IPs' do painel Brevo.";
   }
