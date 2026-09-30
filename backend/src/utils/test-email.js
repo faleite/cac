@@ -40,6 +40,10 @@ async function testarEmail() {
     if (statusConexao.erro) {
       console.error(`   Detalhe do erro: ${statusConexao.erro}`);
     }
+    if (statusConexao.orientacao) {
+      console.log('\n🔍 [DIAGNÓSTICO E ORIENTAÇÃO]:');
+      console.log(`   ${statusConexao.orientacao}`);
+    }
   }
 
   // 2. Se foi passado um e-mail destinatário como argumento na linha de comando
@@ -69,6 +73,10 @@ async function testarEmail() {
     } else {
       console.error('❌ [ERRO NO DISPARO]');
       console.error(`   Erro reportado: ${resultado.erro}`);
+      if (resultado.orientacao) {
+        console.log('\n🔍 [DIAGNÓSTICO E ORIENTAÇÃO]:');
+        console.log(`   ${resultado.orientacao}`);
+      }
       console.log(`   Link contingencial: ${resultado.link}`);
     }
   } else {

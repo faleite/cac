@@ -1,24 +1,29 @@
 const path = require('path');
 const fs = require('fs');
 
-// Tentar carregar dotenv a partir da pasta local ou da raiz do projeto
-try {
-  const dotenv = require('dotenv');
-  const envPaths = [
-    path.resolve(process.cwd(), '.env'),
-    path.resolve(__dirname, '../../.env'),
-    path.resolve(__dirname, '../../../.env')
-  ];
+// Função para sincronizar variáveis a partir do .env com override ativo
+function carregarDotenv() {
+  try {
+    const dotenv = require('dotenv');
+    const envPaths = [
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(__dirname, '../../.env'),
+      path.resolve(__dirname, '../../../.env')
+    ];
 
-  for (const p of envPaths) {
-    if (fs.existsSync(p)) {
-      dotenv.config({ path: p });
-      break;
+    for (const p of envPaths) {
+      if (fs.existsSync(p)) {
+        dotenv.config({ path: p, override: true });
+        break;
+      }
     }
+  } catch (e) {
+    // Em ambientes sem dotenv ou com injeção externa
   }
-} catch (e) {
-  // Em ambientes de container, as variáveis são injetadas diretamente via docker-compose
 }
+
+// Carga inicial
+carregarDotenv();
 
 const dbUser = process.env.POSTGRES_USER || process.env.DB_USER || 'devuser';
 const dbPassword = process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'devpassword';
@@ -33,10 +38,19 @@ if (!process.env.DATABASE_URL) {
 }
 
 module.exports = {
-  env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '3000', 10),
-  sessionSecret: process.env.SESSION_SECRET || 'dev_secret_cac_atividades_key_2026',
-  databaseUrl: process.env.DATABASE_URL || defaultDbUrl,
+  carregarDotenv,
+  get env() {
+    return process.env.NODE_ENV || 'development';
+  },
+  get port() {
+    return parseInt(process.env.PORT || '3000', 10);
+  },
+  get sessionSecret() {
+    return process.env.SESSION_SECRET || 'dev_secret_cac_atividades_key_2026';
+  },
+  get databaseUrl() {
+    return process.env.DATABASE_URL || defaultDbUrl;
+  },
   db: {
     host: dbHost,
     port: dbPort,
@@ -44,12 +58,18 @@ module.exports = {
     password: dbPassword,
     database: dbName
   },
-  appUrl: process.env.APP_URL || '',
-  email: {
-    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    from: process.env.EMAIL_FROM || 'no-reply@cacatividades.pt'
+  get appUrl() {
+    carregarDotenv();
+    return (process.env.APP_URL || '').trim();
+  },
+  get email() {
+    carregarDotenv();
+    return {
+      host: (process.env.SMTP_HOST || 'smtp-relay.brevo.com').trim(),
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      user: (process.env.SMTP_USER || '').trim(),
+      pass: (process.env.SMTP_PASS || '').trim(),
+      from: (process.env.EMAIL_FROM || 'no-reply@cacatividades.pt').trim()
+    };
   }
 };

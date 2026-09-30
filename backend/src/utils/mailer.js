@@ -1,26 +1,52 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const { logErro } = require('./logger');
 
-// Configuração otimizada para SMTP Brevo (porta 587 STARTTLS ou 465 SSL)
-const transporter = nodemailer.createTransport({
-  host: config.email.host,
-  port: config.email.port,
-  secure: Number(config.email.port) === 465, // true para SSL na porta 465, false para 587 (STARTTLS)
-  auth: (config.email.user && config.email.pass) ? {
-    user: config.email.user,
-    pass: config.email.pass
-  } : undefined,
-  connectionTimeout: 10000, // 10 segundos para timeout de conexão
-  greetingTimeout: 10000,
-  socketTimeout: 15000
-});
+/**
+ * Cria ou retorna transportador SMTP com as credenciais atuais
+ */
+function obterTransporter() {
+  const emailCfg = config.email;
+  const isSsl = Number(emailCfg.port) === 465;
+
+  return nodemailer.createTransport({
+    host: emailCfg.host,
+    port: emailCfg.port,
+    secure: isSsl,
+    auth: (emailCfg.user && emailCfg.pass) ? {
+      user: emailCfg.user,
+      pass: emailCfg.pass
+    } : undefined,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
+  });
+}
+
+/**
+ * Interpreta erros comuns do Brevo e provê orientação clara
+ */
+function diagnosticarErroBrevo(mensagemErro) {
+  if (mensagemErro.includes('535') || mensagemErro.toLowerCase().includes('authentication failed')) {
+    return "Falha de autenticação SMTP (535). A causa habitual no Brevo é que 'SMTP_USER' no .env foi preenchido com o seu e-mail pessoal. No painel Brevo (menu 'SMTP & API' -> aba 'SMTP'), copie o valor exato do campo 'Login' (frequentemente no formato '1234567@smtp-brevo.com' ou similar) e a chave SMTP em 'SMTP_PASS'.";
+  }
+  if (mensagemErro.includes('550') || mensagemErro.toLowerCase().includes('sender address not verified')) {
+    return "Remetente não verificado (550). O endereço definido em 'EMAIL_FROM' no .env deve estar verificado na seção 'Senders, Domains & Dedicated IPs' do painel Brevo.";
+  }
+  if (mensagemErro.includes('ENOTFOUND') || mensagemErro.includes('ETIMEDOUT')) {
+    return "Falha de conexão com o servidor Brevo. Verifique se o host 'smtp-relay.brevo.com' e a porta 587 estão acessíveis.";
+  }
+  return mensagemErro;
+}
 
 /**
  * Testa a conexão com o servidor SMTP (Brevo)
- * @returns {Promise<{conectado: boolean, modoSimulado?: boolean, mensagem: string, erro?: string}>}
+ * @returns {Promise<{conectado: boolean, modoSimulado?: boolean, mensagem: string, erro?: string, orientacao?: string}>}
  */
 async function verificarConexaoSMTP() {
-  if (!config.email.user || !config.email.pass) {
+  const emailCfg = config.email;
+
+  if (!emailCfg.user || !emailCfg.pass) {
     return {
       conectado: false,
       modoSimulado: true,
@@ -29,18 +55,22 @@ async function verificarConexaoSMTP() {
   }
 
   try {
+    const transporter = obterTransporter();
     await transporter.verify();
     return {
       conectado: true,
       modoSimulado: false,
-      mensagem: `Conexão SMTP com Brevo (${config.email.host}:${config.email.port}) estabelecida com sucesso!`
+      mensagem: `Conexão SMTP com Brevo (${emailCfg.host}:${emailCfg.port}) estabelecida com sucesso!`
     };
   } catch (error) {
+    const orientacao = diagnosticarErroBrevo(error.message);
+    logErro('MAILER', `Falha ao conectar ao servidor SMTP (${emailCfg.host}:${emailCfg.port}): ${error.message}`);
     return {
       conectado: false,
       modoSimulado: false,
       erro: error.message,
-      mensagem: `Falha ao conectar ao servidor SMTP (${config.email.host}:${config.email.port}): ${error.message}`
+      orientacao,
+      mensagem: `Falha ao conectar ao servidor SMTP (${emailCfg.host}:${emailCfg.port}): ${error.message}`
     };
   }
 }
@@ -51,16 +81,16 @@ async function verificarConexaoSMTP() {
  * @param {string} nome - Nome do usuário
  * @param {string} token - Token de recuperação único
  * @param {string} hostBaseUrl - URL base para montagem do link
- * @returns {Promise<{sucesso: boolean, link: string, messageId?: string, simulado?: boolean, erro?: string}>}
+ * @returns {Promise<{sucesso: boolean, link: string, messageId?: string, simulado?: boolean, erro?: string, orientacao?: string}>}
  */
 async function enviarEmailRecuperacao(destinatario, nome, token, hostBaseUrl = 'http://localhost') {
   const baseUrl = (config.appUrl || hostBaseUrl || 'http://localhost').replace(/\/$/, '');
   const linkRecuperacao = `${baseUrl}/redefinir-senha.html?token=${encodeURIComponent(token)}`;
 
-  // Formatar remetente conforme padrão oficial
-  const remetente = config.email.from.includes('<')
-    ? config.email.from
-    : `CAC Atividades <${config.email.from}>`;
+  const emailCfg = config.email;
+  const remetente = emailCfg.from.includes('<')
+    ? emailCfg.from
+    : `CAC Atividades <${emailCfg.from}>`;
 
   const mensagem = {
     from: remetente,
@@ -97,7 +127,8 @@ async function enviarEmailRecuperacao(destinatario, nome, token, hostBaseUrl = '
   };
 
   try {
-    if (config.email.user && config.email.pass) {
+    if (emailCfg.user && emailCfg.pass) {
+      const transporter = obterTransporter();
       const info = await transporter.sendMail(mensagem);
       console.log(`[MAILER] E-mail de recuperação enviado com sucesso via Brevo para ${destinatario} (MessageId: ${info.messageId})`);
       return { sucesso: true, messageId: info.messageId, link: linkRecuperacao };
@@ -106,13 +137,14 @@ async function enviarEmailRecuperacao(destinatario, nome, token, hostBaseUrl = '
       return { sucesso: true, simulado: true, link: linkRecuperacao };
     }
   } catch (error) {
-    console.error(`[MAILER ERRO] Falha ao enviar e-mail via SMTP (${config.email.host}) para ${destinatario}:`, error.message);
-    return { sucesso: false, erro: error.message, link: linkRecuperacao };
+    const orientacao = diagnosticarErroBrevo(error.message);
+    logErro('MAILER', `Falha ao enviar e-mail via SMTP (${emailCfg.host}) para ${destinatario}: ${error.message} - ${orientacao}`, error);
+    return { sucesso: false, erro: error.message, orientacao, link: linkRecuperacao };
   }
 }
 
 module.exports = {
-  transporter,
+  obterTransporter,
   verificarConexaoSMTP,
   enviarEmailRecuperacao
 };

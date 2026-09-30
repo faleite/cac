@@ -17,6 +17,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-007** | 2026-09-29 | Backend / Formatters | Campos de incidências zeradas exibindo `**` em vez de `*0*` na mensagem do WhatsApp em `confirmar-whatsapp.html`. | A função `formatarIncidenciaValor` retornava `**` para valores zero ou nulos. | Atualizada a função em `backend/src/utils/formatters.js` para retornar `*0*` quando a quantidade for zero/nula e atualizados os testes automatizados em `test-fase5.js`. | **Resolvido** |
 | **ERR-008** | 2026-09-30 | Frontend / Rascunho & Sincronização | Matrícula em `abertura.html` não atualizava após alteração de matrícula padrão em `perfil.html`. | O rascunho local (`localStorage`) de `abertura.html` sobrescrevia o campo com o valor antigo do rascunho e `perfil.html` não invalidava o rascunho ao salvar. | Limpeza automática do rascunho de abertura ao salvar perfil, sincronização inteligente diferenciando preferência de personalização manual e restauração em blur de campo vazio. | **Resolvido** |
 | **ERR-009** | 2026-09-30 | Backend / E-mail Transacional Brevo | Formato inválido de `EMAIL_FROM` (preenchido com hostname) e link de recuperação expondo porta interna. | Variável `EMAIL_FROM` configurada como `smtp-relay.brevo.com` em vez de e-mail de remetente verificado; falta de `APP_URL` para links via proxy reverso. | Correção de `EMAIL_FROM` no `.env` para e-mail verificado da conta, adição de `APP_URL=http://localhost`, suporte a porta 587/465 com timeouts no `mailer.js` e criação do script `test-email.js`. | **Resolvido** |
+| **ERR-010** | 2026-09-30 | Backend / Autenticação & Brevo SMTP | E-mail de recuperação não recebido: desincronização de .env no container e falha de autenticação SMTP 535. | Container Docker não possuía montagem de `/app/.env` (mantendo variáveis antigas vazias) e `SMTP_USER` preenchido com e-mail pessoal em vez do Login técnico do Brevo. | Montagem de `./.env:/app/.env` e `./logs:/app/logs` no `docker-compose.yml`, reload com `override: true`, `nodemon.json`, detecção e logging de erros 535/550 no `mailer.js` e persistência em `logs/app-error.log`. | **Resolvido** |
 
 ---
 
@@ -77,6 +78,21 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   2. Em `backend/src/config/index.js`, adicionado suporte a `APP_URL` e padrões otimizados para Brevo (porta 587 STARTTLS / 465 SSL).
   3. Em `backend/src/utils/mailer.js`, implementada detecção de porta segura, timeouts de conexão e a função `verificarConexaoSMTP()`.
   4. Criado script CLI de validação `backend/src/utils/test-email.js` para teste de conexão SMTP e disparo controlado de teste com retorno de Message ID.
+
+### Caso ERR-010: E-mail de Recuperação Não Recebido e Diagnóstico de Falha SMTP Brevo
+- **Contexto:** Ao solicitar a recuperação de palavra-passe em `http://localhost/recuperar-senha.html`, a tela informou sucesso aparente ("Se o e-mail existir na nossa base de dados, receberá as instruções em breve"), mas a mensagem nunca chegou à caixa de entrada do usuário.
+- **Impacto:** Impossibilidade de recuperar acesso à conta do operador por e-mail no ambiente de desenvolvimento/produção.
+- **Causa-Raiz:**
+  1. *Desincronização do Docker:* Ao editar o `.env` no host macOS para inserir `SMTP_PASS`, o container Docker `cac_backend` não continha o arquivo montado e não havia sido recriado. Com isso, `config.email.pass` continuou vazio na memória do processo Node.js, acionando o fallback `[MAILER SIMULADO]` sem efetuar chamada à rede.
+  2. *Autenticação SMTP Inválida (535):* Após reiniciar o container com a chave preenchida, o servidor do Brevo retornou `Invalid login: 535 5.7.8 Authentication failed`. Isso ocorreu porque o campo `SMTP_USER` foi preenchido com o e-mail de login pessoal (`devfaleite@gmail.com`), enquanto o Brevo exige o identificador técnico específico exibido no campo "Login" da aba *SMTP & API -> SMTP* (formato `1234567@smtp-brevo.com` ou login técnico equivalente).
+  3. *Tratamento Silencioso:* O erro de disparo era registrado de forma genérica sem persistência estruturada em arquivo de log (`logs/app-error.log`).
+- **Resolução:**
+  1. No `docker-compose.yml`, adicionadas montagens de volume `- ./.env:/app/.env` e `- ./logs:/app/logs` para que alterações no `.env` e persistência de logs sejam sincronizadas em tempo real.
+  2. Em `backend/src/config/index.js`, implementado `carregarDotenv()` com `override: true` e getters reativos com `.trim()`, garantindo que qualquer alteração no `.env` seja lida instantaneamente pelo backend sem espaços acidentais.
+  3. Criado `backend/nodemon.json` monitorando `.env` para restart automático.
+  4. Criado utilitário `backend/src/utils/logger.js` registrando falhas técnicas e exceções em `logs/app-error.log` com timestamp ISO e contexto.
+  5. Atualizado `backend/src/utils/mailer.js` para usar `obterTransporter()` dinâmico, interceptar erros típicos do Brevo (códigos 535 e 550) e emitir diagnósticos orientativos detalhados.
+  6. Atualizado o utilitário `backend/src/utils/test-email.js` para indicar com precisão a diferença entre o e-mail pessoal e o Login técnico da aba SMTP do Brevo.
 
 ---
 
