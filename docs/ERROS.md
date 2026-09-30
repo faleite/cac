@@ -15,6 +15,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-005** | 2026-09-28 | Frontend / Abertura de Turno | Campo "Data de Operação" bloqueado com atributo `disabled`, impedindo o registo retroativo de dias anteriores. | O campo de data estava fixado como texto somente leitura (`disabled`), sem permitir edição e sem enviar o campo `dataRegisto` no payload de abertura. | Campo atualizado para `<input type="date">` editável preenchido por defeito com a data atual (`YYYY-MM-DD`), envio de `dataRegisto` no POST de abertura, normalização UTC no backend e reatividade do botão de início ao selecionar datas anteriores. | **Resolvido** |
 | **ERR-006** | 2026-09-28 | Frontend / UI Registos | Botão "+ Novo Turno" visualmente colado à barra de filtros ("Todos", "Fechados", "Abertos"). | Falta de margem inferior específica (`margin-bottom`) no botão de ação e espaçamento insuficiente com o grupo de botões de filtro. | Ajustado o layout em `registos.html` com espaçamento preciso de ~8px (~2mm) entre o botão de novo turno e o container de filtros. | **Resolvido** |
 | **ERR-007** | 2026-09-29 | Backend / Formatters | Campos de incidências zeradas exibindo `**` em vez de `*0*` na mensagem do WhatsApp em `confirmar-whatsapp.html`. | A função `formatarIncidenciaValor` retornava `**` para valores zero ou nulos. | Atualizada a função em `backend/src/utils/formatters.js` para retornar `*0*` quando a quantidade for zero/nula e atualizados os testes automatizados em `test-fase5.js`. | **Resolvido** |
+| **ERR-008** | 2026-09-30 | Frontend / Rascunho & Sincronização | Matrícula em `abertura.html` não atualizava após alteração de matrícula padrão em `perfil.html`. | O rascunho local (`localStorage`) de `abertura.html` sobrescrevia o campo com o valor antigo do rascunho e `perfil.html` não invalidava o rascunho ao salvar. | Limpeza automática do rascunho de abertura ao salvar perfil, sincronização inteligente diferenciando preferência de personalização manual e restauração em blur de campo vazio. | **Resolvido** |
 
 ---
 
@@ -54,6 +55,18 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 - **Contexto:** Na página de partilha `confirmar-whatsapp.html?id=32`, os campos de incidência sem ocorrências eram exibidos como `Qtd Avisados: **`.
 - **Impacto:** Inconsistência na mensagem gerada, que deve exibir `*0*` para contagens zeradas.
 - **Resolução:** A função `formatarIncidenciaValor` em `backend/src/utils/formatters.js` foi corrigida para retornar `*${val}*` para qualquer valor $\ge 0$ (formatando valores zerados ou ausentes como `*0*`). A suíte de testes `test-fase5.js` foi atualizada e executada com 100% de sucesso.
+
+### Caso ERR-008: Desincronização de Matrícula Padrão entre Perfil e Abertura de Turno
+- **Contexto:** Ao alterar a "Matrícula do Veículo Padrão" no ecrã de Perfil (`perfil.html`) e aceder à Abertura de Turno (`abertura.html`), o campo "Matrícula *" mantinha a matrícula antiga em vez de exibir a nova cadastrada no perfil. O operador notou que o campo só assumia a nova matrícula se apagasse o conteúdo do campo manualmente e recarregasse a página.
+- **Impacto:** Experiência confusa para o operador, que precisava redigitar a matrícula habitual ou limpar o campo manualmente mesmo já a tendo atualizado no seu perfil.
+- **Causa-Raiz:** 
+  1. `perfil.html` não possuía o script `draft-storage.js` e não invalidava o rascunho local de `form-abertura` no `localStorage` após salvar as novas preferências.
+  2. Ao aceder a `abertura.html`, o formulário pré-carregava a nova matrícula do perfil, mas em seguida o método `CACDraftStorage.conectar('form-abertura')` restaurava o valor do rascunho antigo salvo no navegador, sobrescrevendo a nova preferência.
+  3. Não existia mecanismo para diferenciar quando o operador digitou deliberadamente uma viatura temporária diferente vs quando o campo apenas continha o padrão salvo anteriormente.
+- **Resolução:**
+  1. Em `perfil.html`, incluído `draft-storage.js` e adicionada chamada `CACDraftStorage.limpar('form-abertura')` imediatamente após a resposta de sucesso de atualização do perfil.
+  2. Em `abertura.html`, o script foi refatorado para conectar o rascunho antes e verificar se houve customização manual (`customMatricula` / `customGiro`). Se o campo estiver vazio ou não for customizado, assume imediatamente as novas preferências do perfil.
+  3. Adicionados listeners de `input` para marcar customização manual caso o operador digite uma viatura diferente, `blur` para repor automaticamente a matrícula/giro padrão se o campo for apagado, e suporte a `pageshow` para evitar cache obsoleto do navegador (bfcache).
 
 ---
 

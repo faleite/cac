@@ -239,18 +239,104 @@
         aplicarEstadoVisual(inputDataRegisto.value);
       });
 
-      // Pré-preenchimento das preferências do perfil (caso campo esteja vazio)
+      // Pré-preenchimento e sincronização com preferências do perfil
       const inputMatricula = document.getElementById('matricula-dia');
       const inputGiro = document.getElementById('giro-dia');
-      if (!inputMatricula.value && preferencias.matriculaPadrao) {
-        inputMatricula.value = preferencias.matriculaPadrao;
-      }
-      if (!inputGiro.value && preferencias.giroPadrao) {
-        inputGiro.value = preferencias.giroPadrao;
+
+      // 1. Conectar mecanismo de rascunho em localStorage (restaura Km Inicial e eventuais campos)
+      CACDraftStorage.conectar('form-abertura');
+
+      // 2. Aplicar preferências atualizadas do perfil (se não foram customizadas manualmente)
+      if (preferencias.matriculaPadrao) {
+        inputMatricula.placeholder = preferencias.matriculaPadrao;
+
+        const draftSalvo = localStorage.getItem(CACDraftStorage.PREFIXO + 'form-abertura');
+        let customizada = false;
+        if (draftSalvo) {
+          try {
+            const p = JSON.parse(draftSalvo);
+            if (p && p.customMatricula) {
+              customizada = true;
+            }
+          } catch (e) {}
+        }
+
+        // Se o campo estiver vazio ou se não for uma personalização pontual, sincroniza com o perfil
+        if (!inputMatricula.value || !customizada) {
+          inputMatricula.value = preferencias.matriculaPadrao;
+        }
       }
 
-      // Conectar mecanismo de rascunho em localStorage
-      CACDraftStorage.conectar('form-abertura');
+      if (preferencias.giroPadrao) {
+        inputGiro.placeholder = preferencias.giroPadrao;
+
+        const draftSalvo = localStorage.getItem(CACDraftStorage.PREFIXO + 'form-abertura');
+        let customizada = false;
+        if (draftSalvo) {
+          try {
+            const p = JSON.parse(draftSalvo);
+            if (p && p.customGiro) {
+              customizada = true;
+            }
+          } catch (e) {}
+        }
+
+        if (!inputGiro.value || !customizada) {
+          inputGiro.value = preferencias.giroPadrao;
+        }
+      }
+
+      // Ao digitar manualmente, identifica se o operador especificou um veículo diferente do habitual
+      inputMatricula.addEventListener('input', () => {
+        const val = inputMatricula.value.trim().toUpperCase();
+        const custom = val !== '' && val !== (preferencias.matriculaPadrao || '').toUpperCase();
+        try {
+          const chave = CACDraftStorage.PREFIXO + 'form-abertura';
+          const salvo = localStorage.getItem(chave);
+          if (salvo) {
+            const p = JSON.parse(salvo);
+            p.customMatricula = custom;
+            localStorage.setItem(chave, JSON.stringify(p));
+          }
+        } catch (e) {}
+      });
+
+      // Se o campo for esvaziado, ao perder o foco (blur) restaura a matrícula do perfil
+      inputMatricula.addEventListener('blur', () => {
+        if (!inputMatricula.value.trim() && preferencias.matriculaPadrao) {
+          inputMatricula.value = preferencias.matriculaPadrao;
+          CACDraftStorage.salvar('form-abertura');
+        }
+      });
+
+      inputGiro.addEventListener('input', () => {
+        const val = inputGiro.value.trim().toUpperCase();
+        const custom = val !== '' && val !== (preferencias.giroPadrao || '').toUpperCase();
+        try {
+          const chave = CACDraftStorage.PREFIXO + 'form-abertura';
+          const salvo = localStorage.getItem(chave);
+          if (salvo) {
+            const p = JSON.parse(salvo);
+            p.customGiro = custom;
+            localStorage.setItem(chave, JSON.stringify(p));
+          }
+        } catch (e) {}
+      });
+
+      inputGiro.addEventListener('blur', () => {
+        if (!inputGiro.value.trim() && preferencias.giroPadrao) {
+          inputGiro.value = preferencias.giroPadrao;
+          CACDraftStorage.salvar('form-abertura');
+        }
+      });
+
+      // Recarrega dados ao voltar pelo histórico do navegador (bfcache)
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          window.location.reload();
+        }
+      });
+
 
       // 3. Submissão do formulário de abertura
       const form = document.getElementById('form-abertura');

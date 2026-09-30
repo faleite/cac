@@ -142,6 +142,7 @@
   </nav>
 
   <script src="/js/app.js"></script>
+  <script src="/js/draft-storage.js"></script>
   <script>
     async function carregarPerfil() {
       const res = await CAC.api('/perfil', { method: 'GET' });
@@ -216,6 +217,14 @@
         document.getElementById('senha_atual').value = '';
         document.getElementById('nova_senha').value = '';
         document.getElementById('confirmar_nova_senha').value = '';
+
+        // Limpar rascunho de abertura para que novas preferências sejam sincronizadas imediatamente
+        if (window.CACDraftStorage) {
+          CACDraftStorage.limpar('form-abertura');
+        } else {
+          try { localStorage.removeItem('cac_draft_form-abertura'); } catch (e) {}
+        }
+
         carregarPerfil();
       } else {
         CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Ocorreu um erro ao atualizar o perfil.', 'danger');
