@@ -39,6 +39,13 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
 - [x] Atualizado fluxo pós-fechamento em `frontend/public/fecho.html` para redirecionamento automático direto para `/confirmar-whatsapp.html?id=:id`.
 - [x] Desenvolvida e executada suíte de testes automatizados `backend/src/utils/test-fase5.js` com testes unitários de formatação e testes de integração de API/RBAC (100% aprovados).
 - [x] Executadas as suítes de testes anteriores (`test-fase3.js` e `test-fase4.js`) garantindo zero regressões.
+- [x] **Conformidade Básica com RGPD**:
+  - [x] Adicionados campos de auditoria de consentimento (`termosAceitosEm`, `termosVersao`) no schema Prisma e migração `add_rgpd_termos_aceite` executada.
+  - [x] Validação estrita de consentimento obrigatório no auto-registo (`/api/auth/registo`) com bloqueio de submissão sem aceite.
+  - [x] Checkbox de consentimento desmarcada por padrão em `registo.html` com reatividade no botão de submissão e links para os Termos de Uso e Política de Privacidade.
+  - [x] Criação da página estática `termos-privacidade.html` no *Postal Utility System*.
+  - [x] Implementação do Direito ao Esquecimento: rota `DELETE /api/perfil/conta` com transação atômica de deleção definitiva (auditorias, registos de turnos, perfil, anonimização de logs e exclusão do usuário), modal interativo com confirmação por senha em `perfil.html`.
+  - [x] Suíte de testes `test-rgpd.js` com 18 testes automatizados aprovados (100% de sucesso).
 
 ---
 
@@ -67,3 +74,5 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
 | 2026-09-30 | Desenvolvedor Sênior | Configuração e implementação do envio de token de recuperação de senha via Brevo (SMTP Relay): padronização do `mailer.js` com timeouts e porta 587 STARTTLS / 465 SSL, parametrização de `APP_URL`, criação do CLI de diagnóstico `test-email.js`, atualização do `.env` e `.env.example`, e validação ponta a ponta sem quebras no fluxo de autenticação. |
 | 2026-09-30 | Desenvolvedor Sênior | Resolução de não recebimento de e-mail (ERR-010): montagem de volumes `.env` e `logs` no Docker, sincronização em tempo real com `override: true`, `nodemon.json`, criação de `logger.js` com escrita em `logs/app-error.log` e diagnóstico contextual para erro 535 de autenticação Brevo. |
 | 2026-10-01 | UI/UX Designer & Dev | Inclusão do botão de partilha de turno via WhatsApp (`/confirmar-whatsapp.html?id=:id`) lado a lado com o botão 'Editar com Auditoria' em `registos.html` e adição da classe de estilo `.btn-whatsapp-sm` em `custom.css`, preservando dimensões e estrutura visual dos cartões de turno. |
+| 2026-10-03 | Desenvolvedor & SecOps | Implementação de conformidade com o RGPD: campos `termosAceitosEm` e `termosVersao`, bloqueio de auto-registo sem consentimento ativo, links para `termos-privacidade.html`, caixa de aceite reativa em `registo.html`, rota `DELETE /api/perfil/conta` com transação de limpeza integral (Direito ao Esquecimento), modal com senha em `perfil.html` e suíte de testes `test-rgpd.js` 100% aprovada. |
+

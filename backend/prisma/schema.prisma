@@ -22,6 +22,8 @@ model Usuario {
   ativo            Boolean   @default(true)
   tokenRecuperacao String?   @map("token_recuperacao") @db.VarChar(255)
   tokenExpiracao   DateTime? @map("token_expiracao") @db.Timestamptz
+  termosAceitosEm  DateTime? @map("termos_aceitos_em") @db.Timestamptz
+  termosVersao     String?   @map("termos_versao") @db.VarChar(20)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 

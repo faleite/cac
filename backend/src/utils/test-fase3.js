@@ -70,6 +70,7 @@ async function runTests() {
       email: testEmail,
       senha: testSenha,
       confirmar_senha: testSenha,
+      aceitou_termos: true,
       perfil: 'administrador' // Tentativa de injeção de perfil para testar auto-elevação
     });
     const regRes = mockRes();

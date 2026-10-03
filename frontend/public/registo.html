@@ -63,7 +63,15 @@
           <input class="form-control" type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Repita a palavra-passe" required minlength="6">
         </div>
 
-        <button type="submit" class="btn btn-primary" id="btn-submit" style="margin-top: 8px;">
+        <!-- Consentimento RGPD (Consentimento Livre e Informado) -->
+        <div class="form-group" style="margin-top: 16px; margin-bottom: 20px;">
+          <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: var(--color-on-surface); line-height: 1.45;">
+            <input type="checkbox" id="aceite_termos" name="aceite_termos" style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--color-primary); cursor: pointer;" required>
+            <span>Li e aceito os <a href="/termos-privacidade.html#termos" target="_blank" class="link" style="text-decoration: underline; font-weight: 600;">Termos de Uso</a> e a <a href="/termos-privacidade.html#privacidade" target="_blank" class="link" style="text-decoration: underline; font-weight: 600;">Política de Privacidade</a>.</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-submit" disabled style="margin-top: 8px; opacity: 0.55; cursor: not-allowed;">
           <span>Criar Conta e Entrar</span>
           <svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
         </button>
@@ -84,10 +92,34 @@
 
     const form = document.getElementById('form-registo');
     const btnSubmit = document.getElementById('btn-submit');
+    const chkAceite = document.getElementById('aceite_termos');
+
+    // Controle reativo do botão de submissão pelo aceite dos termos
+    function atualizarEstadoBotao() {
+      if (chkAceite.checked) {
+        btnSubmit.disabled = false;
+        btnSubmit.style.opacity = '1';
+        btnSubmit.style.cursor = 'pointer';
+      } else {
+        btnSubmit.disabled = true;
+        btnSubmit.style.opacity = '0.55';
+        btnSubmit.style.cursor = 'not-allowed';
+      }
+    }
+
+    chkAceite.addEventListener('change', atualizarEstadoBotao);
+    // Garantir estado desmarcado ao carregar/recarregar a página
+    chkAceite.checked = false;
+    atualizarEstadoBotao();
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       CAC.limparAlerta('alerta-container');
+
+      if (!chkAceite.checked) {
+        CAC.mostrarAlerta('alerta-container', 'Por favor, assinale o consentimento com os Termos de Uso e Política de Privacidade.', 'danger');
+        return;
+      }
 
       const nome_completo = document.getElementById('nome_completo').value.trim();
       const numero_sc = document.getElementById('numero_sc').value.trim().toUpperCase();
@@ -106,11 +138,19 @@
 
       const res = await CAC.api('/auth/registo', {
         method: 'POST',
-        body: { nome_completo, numero_sc, telemovel, email, senha, confirmar_senha }
+        body: {
+          nome_completo,
+          numero_sc,
+          telemovel,
+          email,
+          senha,
+          confirmar_senha,
+          aceitou_termos: true
+        }
       });
 
       btnSubmit.disabled = false;
-      btnSubmit.style.opacity = '1';
+      atualizarEstadoBotao();
 
       if (res.ok) {
         CAC.mostrarAlerta('alerta-container', 'Conta criada com sucesso! A configurar o seu perfil...', 'success');

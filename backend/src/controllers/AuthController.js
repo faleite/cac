@@ -13,7 +13,15 @@ class AuthController {
    */
   async registo(req, res) {
     try {
-      const { nome_completo, numero_sc, telemovel, email, senha, confirmar_senha } = req.body;
+      const { nome_completo, numero_sc, telemovel, email, senha, confirmar_senha, aceitou_termos } = req.body;
+
+      // Validação de consentimento livre e informado (RGPD)
+      if (aceitou_termos !== true && aceitou_termos !== 'true') {
+        return res.status(400).json({
+          status: 'erro',
+          mensagem: 'É obrigatório ler e aceitar os Termos de Uso e a Política de Privacidade em conformidade com o RGPD.'
+        });
+      }
 
       // Validação de campos obrigatórios
       if (!nome_completo || !numero_sc || !telemovel || !email || !senha) {
@@ -62,6 +70,7 @@ class AuthController {
 
       // Criação transacional do Usuário e seu PerfilConfiguracao
       const novoUsuario = await prisma.$transaction(async (tx) => {
+        const agora = new Date();
         const usuario = await tx.usuario.create({
           data: {
             nomeCompleto: nome_completo.trim(),
@@ -70,7 +79,9 @@ class AuthController {
             email: emailFormatado,
             senhaHash: senhaHash,
             perfil: 'operador', // Perfil fixo e imutável no auto-registo
-            ativo: true
+            ativo: true,
+            termosAceitosEm: agora,
+            termosVersao: '1.0'
           }
         });
 
@@ -244,7 +255,9 @@ class AuthController {
           email: usuario.email,
           perfil: usuario.perfil,
           matriculaPadrao: usuario.perfilConfiguracao?.matriculaPadrao || '',
-          giroPadrao: usuario.perfilConfiguracao?.giroPadrao || ''
+          giroPadrao: usuario.perfilConfiguracao?.giroPadrao || '',
+          termosAceitosEm: usuario.termosAceitosEm ? usuario.termosAceitosEm.toISOString() : null,
+          termosVersao: usuario.termosVersao || null
         }
       });
     } catch (error) {
