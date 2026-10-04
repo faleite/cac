@@ -40,14 +40,26 @@ const CAC = {
     }
   },
 
+  // Utilitário de escape de caracteres HTML para prevenir XSS
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
   // Exibir alerta em um elemento container
   mostrarAlerta(containerId, mensagem, tipo = 'danger') {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const mensagemSanitizada = this.escapeHtml(mensagem);
     container.innerHTML = `
-      <div class="alert alert-${tipo}">
-        <span>${mensagem}</span>
+      <div class="alert alert-${this.escapeHtml(tipo)}">
+        <span>${mensagemSanitizada}</span>
       </div>
     `;
     container.style.display = 'block';

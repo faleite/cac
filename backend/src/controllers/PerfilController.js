@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../database/prisma');
+const { logErro, logSeguranca } = require('../utils/logger');
 
 const SALT_ROUNDS = 10;
 
@@ -39,7 +40,7 @@ class PerfilController {
         }
       });
     } catch (error) {
-      console.error('[ERRO OBTER PERFIL]', error);
+      logErro('PERFIL_OBTER', 'Erro ao consultar dados do perfil', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Erro ao consultar dados do perfil.'
@@ -103,6 +104,11 @@ class PerfilController {
         if (senha_atual) {
           const senhaCorreta = await bcrypt.compare(senha_atual, usuario.senhaHash);
           if (!senhaCorreta) {
+            logSeguranca('TROCA_SENHA_RECUSADA', {
+              usuarioId: usuarioId.toString(),
+              motivo: 'Palavra-passe atual incorreta',
+              ip: req.ip || req.connection?.remoteAddress
+            });
             return res.status(400).json({
               status: 'erro',
               mensagem: 'A palavra-passe atual indicada está incorreta.'
@@ -150,7 +156,7 @@ class PerfilController {
       });
 
     } catch (error) {
-      console.error('[ERRO ATUALIZAR PERFIL]', error);
+      logErro('PERFIL_ATUALIZAR', 'Erro ao atualizar dados do perfil', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro ao atualizar o perfil.'
@@ -187,6 +193,11 @@ class PerfilController {
 
       const senhaCorreta = await bcrypt.compare(senha, usuario.senhaHash);
       if (!senhaCorreta) {
+        logSeguranca('ELIMINACAO_CONTA_RECUSADA', {
+          usuarioId: usuarioId.toString(),
+          motivo: 'Palavra-passe de confirmação incorreta',
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(401).json({
           status: 'erro',
           mensagem: 'A palavra-passe indicada está incorreta. A conta não foi eliminada.'
@@ -231,10 +242,15 @@ class PerfilController {
         });
       });
 
+      logSeguranca('CONTA_ELIMINADA_RGPD', {
+        usuarioExcluidoId: usuarioId.toString(),
+        ip: req.ip || req.connection?.remoteAddress
+      });
+
       // Destruir sessão ativa e limpar cookies
       req.session.destroy((err) => {
         if (err) {
-          console.error('[ERRO DESTROY SESSAO RGPD]', err);
+          logErro('PERFIL_DESTROY_SESSION', 'Erro ao destruir sessão após exclusão de conta RGPD', err);
         }
         res.clearCookie('cac_session_id');
         return res.json({
@@ -244,7 +260,7 @@ class PerfilController {
       });
 
     } catch (error) {
-      console.error('[ERRO ELIMINAR CONTA RGPD]', error);
+      logErro('PERFIL_ELIMINAR_CONTA', 'Erro ao processar eliminação de conta RGPD', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro ao processar a eliminação da conta.'

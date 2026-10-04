@@ -6,6 +6,8 @@ const authRoutes = require('./auth.routes');
 const perfilRoutes = require('./perfil.routes');
 const registosRoutes = require('./registos.routes');
 
+const { logErro } = require('../utils/logger');
+
 // Health Check geral da API
 router.get('/health', async (req, res) => {
   try {
@@ -21,10 +23,10 @@ router.get('/health', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
+    logErro('HEALTH_CHECK', 'Falha na verificação de integridade do banco de dados', error);
     res.status(500).json({
       status: 'erro',
-      message: 'Falha na conexão com o banco de dados',
-      detalhe: error.message,
+      message: 'Falha temporária na conexão com a base de dados.',
       timestamp: new Date().toISOString()
     });
   }

@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../database/prisma');
 const config = require('../config');
 const { enviarEmailRecuperacao } = require('../utils/mailer');
+const { logErro, logSeguranca } = require('../utils/logger');
 
 const SALT_ROUNDS = 10;
 
@@ -112,7 +113,7 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('[ERRO REGISTO]', error);
+      logErro('AUTH_REGISTO', 'Erro no processamento de auto-registo', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro interno ao processar o registo. Tente novamente mais tarde.'
@@ -156,6 +157,11 @@ class AuthController {
 
       // Mensagem genérica para prevenir enumeração de contas
       if (!usuario) {
+        logSeguranca('LOGIN_FALHOU', {
+          identificador: idFormatado,
+          motivo: 'Utilizador não encontrado ou inativo',
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(401).json({
           status: 'erro',
           mensagem: 'Credenciais de acesso incorretas. Tente novamente.'
@@ -165,6 +171,12 @@ class AuthController {
       // Verificação da senha
       const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
       if (!senhaValida) {
+        logSeguranca('LOGIN_FALHOU', {
+          usuarioId: usuario.id.toString(),
+          identificador: idFormatado,
+          motivo: 'Palavra-passe inválida',
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(401).json({
           status: 'erro',
           mensagem: 'Credenciais de acesso incorretas. Tente novamente.'
@@ -187,7 +199,7 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('[ERRO LOGIN]', error);
+      logErro('AUTH_LOGIN', 'Erro no processamento de login', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro ao processar o início de sessão.'
@@ -261,7 +273,7 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('[ERRO ME]', error);
+      logErro('AUTH_ME', 'Falha ao consultar dados da sessão', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Falha ao consultar dados da sessão.'
@@ -305,12 +317,18 @@ class AuthController {
           }
         });
 
+        logSeguranca('RECUPERACAO_SENHA_SOLICITADA', {
+          usuarioId: usuario.id.toString(),
+          email: usuario.email,
+          ip: req.ip || req.connection?.remoteAddress
+        });
+
         // Montar a URL base da requisição (prioriza APP_URL do .env)
         const hostBaseUrl = config.appUrl || `${req.protocol}://${req.get('host')}`;
 
         const resultadoEnvio = await enviarEmailRecuperacao(usuario.email, usuario.nomeCompleto, token, hostBaseUrl);
         if (!resultadoEnvio.sucesso) {
-          console.warn('[AVISO RECUPERAR SENHA] Falha no disparo do e-mail:', resultadoEnvio.erro);
+          logErro('AUTH_RECOVERY_EMAIL', `Falha no disparo do e-mail de recuperação: ${resultadoEnvio.erro}`);
         }
       }
 
@@ -321,7 +339,7 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('[ERRO RECUPERAR SENHA]', error);
+      logErro('AUTH_RECUPERAR_SENHA', 'Erro ao processar pedido de recuperação', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro ao processar o pedido de recuperação.'
@@ -388,13 +406,18 @@ class AuthController {
         }
       });
 
+      logSeguranca('SENHA_REDEFINIDA_SUCESSO', {
+        usuarioId: usuario.id.toString(),
+        ip: req.ip || req.connection?.remoteAddress
+      });
+
       return res.json({
         status: 'sucesso',
         mensagem: 'Palavra-passe redefinida com sucesso. Pode agora iniciar sessão.'
       });
 
     } catch (error) {
-      console.error('[ERRO REDEFINIR SENHA]', error);
+      logErro('AUTH_REDEFINIR_SENHA', 'Erro ao redefinir palavra-passe', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro ao redefinir a palavra-passe.'

@@ -18,6 +18,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-008** | 2026-09-30 | Frontend / Rascunho & Sincronização | Matrícula em `abertura.html` não atualizava após alteração de matrícula padrão em `perfil.html`. | O rascunho local (`localStorage`) de `abertura.html` sobrescrevia o campo com o valor antigo do rascunho e `perfil.html` não invalidava o rascunho ao salvar. | Limpeza automática do rascunho de abertura ao salvar perfil, sincronização inteligente diferenciando preferência de personalização manual e restauração em blur de campo vazio. | **Resolvido** |
 | **ERR-009** | 2026-09-30 | Backend / E-mail Transacional Brevo | Formato inválido de `EMAIL_FROM` (preenchido com hostname) e link de recuperação expondo porta interna. | Variável `EMAIL_FROM` configurada como `smtp-relay.brevo.com` em vez de e-mail de remetente verificado; falta de `APP_URL` para links via proxy reverso. | Correção de `EMAIL_FROM` no `.env` para e-mail verificado da conta, adição de `APP_URL=http://localhost`, suporte a porta 587/465 com timeouts no `mailer.js` e criação do script `test-email.js`. | **Resolvido** |
 | **ERR-010** | 2026-09-30 | Backend / Autenticação & Brevo SMTP | E-mail de recuperação não recebido: desincronização de .env no container e falha de autenticação SMTP 535. | Container Docker não possuía montagem de `/app/.env` (mantendo variáveis antigas vazias) e `SMTP_USER` preenchido com e-mail pessoal em vez do Login técnico do Brevo. | Montagem de `./.env:/app/.env` e `./logs:/app/logs` no `docker-compose.yml`, reload com `override: true`, `nodemon.json`, detecção e logging de erros 535/550 no `mailer.js` e persistência em `logs/app-error.log`. | **Resolvido** |
+| **ERR-011** | 2026-10-04 | Segurança / Backend & Frontend | Exposição de detalhes de erro em `/api/health`, ausência de security headers HTTP, ausência de error handler global no Express e sanitização XSS no frontend. | Detalhes de exceção bruta do Prisma/PostgreSQL eram retornados no JSON da rota `/health`; ausência de middleware para headers de proteção HTTP e sanitização client-side incompleta. | Ocultação de detalhes internos em `/health` com registro em `logs/app-error.log`, headers de segurança HTTP (`nosniff`, `SAMEORIGIN`, `nosniff`), error handler global 500/404, sanitização XSS via `CAC.escapeHtml` e auditoria de segurança em `logs/security.log`. | **Resolvido** |
 
 ---
 
@@ -92,7 +93,14 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   3. Criado `backend/nodemon.json` monitorando `.env` para restart automático.
   4. Criado utilitário `backend/src/utils/logger.js` registrando falhas técnicas e exceções em `logs/app-error.log` com timestamp ISO e contexto.
   5. Atualizado `backend/src/utils/mailer.js` para usar `obterTransporter()` dinâmico, interceptar erros típicos do Brevo (códigos 535 e 550) e emitir diagnósticos orientativos detalhados.
-  6. Atualizado o utilitário `backend/src/utils/test-email.js` para indicar com precisão a diferença entre o e-mail pessoal e o Login técnico da aba SMTP do Brevo.
+### Caso ERR-011: Blindagem de Segurança, Headers HTTP e Sanitização Preventiva
+- **Contexto:** Durante a revisão de segurança preventiva antes das fases analíticas, foram identificados pontos de melhoria: o endpoint `/api/health` retornava o `error.message` original em falhas do banco; faltavam headers de segurança HTTP contra sniffing e clickjacking; requisições a rotas não mapeadas na API podiam responder sem padronização; e valores interpolados dinamicamente no DOM podiam sofrer riscos de XSS.
+- **Impacto:** Potencial vazamento de informações técnicas internas da infraestrutura (information disclosure) e exposição a vulnerabilidades de interface.
+- **Resolução:**
+  1. Em `backend/src/routes/index.js`, o endpoint `/api/health` foi blindado para retornar apenas mensagens amigáveis em caso de falha, registrando o stack trace real exclusivamente no arquivo `logs/app-error.log` via `logErro`.
+  2. Em `backend/src/index.js`, adicionado middleware de headers HTTP de segurança (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin` e remoção de `X-Powered-By`), middleware para 404 em formato JSON e error handler global 500 integrado ao logger.
+  3. Nos controladores `AuthController.js`, `PerfilController.js` e `RegistoDiarioController.js`, tentativas de acesso indevido (403) e falhas de autenticação agora são auditadas em `logs/security.log` via `logSeguranca()`.
+  4. Em `frontend/public/js/app.js` e `frontend/public/registos.html`, implementada a função `CAC.escapeHtml()` com sanitização ativa dos dados dinâmicos renderizados na interface.
 
 ---
 

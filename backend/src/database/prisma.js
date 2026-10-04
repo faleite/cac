@@ -1,3 +1,4 @@
+require('../config');
 const { PrismaClient } = require('@prisma/client');
 
 // Polyfill seguro para serialização de BigInt em JSON (evita TypeError: Do not know how to serialize a BigInt)

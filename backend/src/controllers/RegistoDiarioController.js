@@ -12,6 +12,7 @@ const {
   validarDadosFecho
 } = require('../utils/calculos');
 const { gerarMensagemWhatsapp } = require('../utils/formatters');
+const { logErro, logSeguranca } = require('../utils/logger');
 
 /**
  * Função utilitária para obter a data no formato Date (sem horas, fuso seguro)
@@ -119,7 +120,7 @@ class RegistoDiarioController {
         }
       });
     } catch (error) {
-      console.error('[ERRO OBTER ESTADO ATUAL]', error);
+      logErro('REGISTO_ESTADO_ATUAL', 'Falha ao consultar estado operacional do colaborador', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Falha ao consultar estado operacional do colaborador.'
@@ -197,7 +198,7 @@ class RegistoDiarioController {
         dados: formatarRegisto(novoRegisto)
       });
     } catch (error) {
-      console.error('[ERRO ABERTURA TURNO]', error);
+      logErro('REGISTO_ABERTURA', 'Erro ao registar abertura de turno', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro interno ao registar a abertura de turno.'
@@ -261,6 +262,11 @@ class RegistoDiarioController {
 
       // Verificação de permissão
       if (registo.usuarioId !== usuarioId && perfilUsuario !== 'administrador') {
+        logSeguranca('ACESSO_NEGADO_FECHO_TURNO', {
+          usuarioId: usuarioId.toString(),
+          registoUsuarioId: registo.usuarioId.toString(),
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(403).json({
           status: 'erro',
           mensagem: 'Não tem permissão para fechar o turno de outro colaborador.'
@@ -343,7 +349,7 @@ class RegistoDiarioController {
         dados: formatarRegisto(registoFechado)
       });
     } catch (error) {
-      console.error('[ERRO FECHO TURNO]', error);
+      logErro('REGISTO_FECHO', 'Erro interno no fecho de turno', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro interno ao processar o fecho de turno.'
@@ -406,7 +412,7 @@ class RegistoDiarioController {
         })
       ]);
 
-      return res.json({
+        return res.json({
         status: 'sucesso',
         dados: registos.map(formatarRegisto),
         paginacao: {
@@ -417,7 +423,7 @@ class RegistoDiarioController {
         }
       });
     } catch (error) {
-      console.error('[ERRO LISTAR REGISTOS]', error);
+      logErro('REGISTO_LISTAR', 'Falha ao carregar lista de registos diários', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Falha ao carregar lista de registos diários.'
@@ -470,6 +476,11 @@ class RegistoDiarioController {
 
       // Validação de acesso RBAC
       if (usuarioSessao.perfil === 'operador' && registo.usuarioId.toString() !== usuarioSessao.id.toString()) {
+        logSeguranca('ACESSO_NEGADO_OBTER_REGISTO', {
+          usuarioId: usuarioSessao.id,
+          alvoRegistoId: id,
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(403).json({
           status: 'erro',
           mensagem: 'Acesso negado aos dados de outro colaborador.'
@@ -481,7 +492,7 @@ class RegistoDiarioController {
         dados: formatarRegisto(registo)
       });
     } catch (error) {
-      console.error('[ERRO OBTER REGISTO POR ID]', error);
+      logErro('REGISTO_OBTER_POR_ID', 'Falha ao obter detalhes do registo', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Falha ao obter detalhes do registo.'
@@ -535,6 +546,11 @@ class RegistoDiarioController {
 
       // RBAC: Operador só edita os seus próprios; Admin edita qualquer um
       if (perfilSessao === 'operador' && registoExistente.usuarioId.toString() !== usuarioIdSessao.toString()) {
+        logSeguranca('ACESSO_NEGADO_EDITAR_REGISTO', {
+          usuarioId: usuarioIdSessao.toString(),
+          alvoRegistoId: id,
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(403).json({
           status: 'erro',
           mensagem: 'Não tem permissão para alterar o registo de outro colaborador.'
@@ -690,7 +706,7 @@ class RegistoDiarioController {
         auditoriaId: resultado.auditoria.id.toString()
       });
     } catch (error) {
-      console.error('[ERRO EDITAR REGISTO]', error);
+      logErro('REGISTO_EDITAR', 'Erro ao atualizar registo com auditoria', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro interno ao atualizar o registo diário com auditoria.'
@@ -730,6 +746,11 @@ class RegistoDiarioController {
 
       // Validação de acesso RBAC: Operador só vê o seu; Admin vê qualquer um
       if (usuarioSessao.perfil === 'operador' && registo.usuarioId.toString() !== usuarioSessao.id.toString()) {
+        logSeguranca('ACESSO_NEGADO_WHATSAPP_PREVIEW', {
+          usuarioId: usuarioSessao.id,
+          alvoRegistoId: id,
+          ip: req.ip || req.connection?.remoteAddress
+        });
         return res.status(403).json({
           status: 'erro',
           mensagem: 'Acesso negado à mensagem do relatório de outro colaborador.'
@@ -749,7 +770,7 @@ class RegistoDiarioController {
         }
       });
     } catch (error) {
-      console.error('[ERRO OBTER WHATSAPP PREVIEW]', error);
+      logErro('REGISTO_WHATSAPP_PREVIEW', 'Erro ao gerar mensagem WhatsApp', error);
       return res.status(500).json({
         status: 'erro',
         mensagem: 'Ocorreu um erro interno ao gerar a mensagem do WhatsApp.'
