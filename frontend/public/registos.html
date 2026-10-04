@@ -66,7 +66,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 1000;
       padding: 16px;
     }
     .modal-card {
@@ -319,7 +319,7 @@
                   Encerrar Turno
                 </a>
               ` : ''}
-              <button class="btn btn-sm btn-secondary" onclick="abrirModalEdicao('${idSanitizado}')" style="padding: 6px 12px; font-size: 13px;">
+              <button class="btn btn-sm btn-secondary" data-action="editar" data-id="${idSanitizado}" onclick="abrirModalEdicao('${idSanitizado}')" style="padding: 6px 12px; font-size: 13px;">
                 Editar com Auditoria
               </button>
               <a href="/confirmar-whatsapp.html?id=${idSanitizado}" class="btn btn-sm btn-whatsapp-sm" style="text-decoration: none; padding: 6px 12px; font-size: 13px;" title="Partilhar relatório no WhatsApp">
@@ -336,30 +336,45 @@
 
     // Modal de Edição
     function abrirModalEdicao(id) {
-      const reg = todosRegistos.find(r => r.id === id);
-      if (!reg) return;
+      if (!id) return;
+      const idBusca = String(id).trim();
+      const reg = todosRegistos.find(r => String(r.id).trim() === idBusca);
+      if (!reg) {
+        console.warn('[CAC] Registo não encontrado na lista local:', id);
+        return;
+      }
 
       CAC.limparAlerta('modal-alert-container');
       document.getElementById('edit-id').value = reg.id;
       document.getElementById('edit-motivo').value = '';
-      document.getElementById('edit-km-inicial').value = reg.kmInicial;
-      document.getElementById('edit-km-final').value = reg.kmFinal !== null ? reg.kmFinal : '';
-      document.getElementById('edit-matricula').value = reg.matriculaDia;
-      document.getElementById('edit-giro').value = reg.giroDia;
-      document.getElementById('edit-objetos').value = reg.qtdObjetos;
-      document.getElementById('edit-recolhas').value = reg.qtdRecolhas;
-      document.getElementById('edit-avisados').value = reg.qtdAvisados;
-      document.getElementById('edit-retornos').value = reg.qtdRetornos;
-      document.getElementById('edit-end-insuf').value = reg.qtdEndInsuficiente;
-      document.getElementById('edit-recusados').value = reg.qtdRecusados;
-      document.getElementById('edit-desc-morada').value = reg.qtdDescMorada;
+      document.getElementById('edit-km-inicial').value = reg.kmInicial ?? '';
+      document.getElementById('edit-km-final').value = (reg.kmFinal !== null && reg.kmFinal !== undefined) ? reg.kmFinal : '';
+      document.getElementById('edit-matricula').value = reg.matriculaDia || '';
+      document.getElementById('edit-giro').value = reg.giroDia || '';
+      document.getElementById('edit-objetos').value = (reg.qtdObjetos !== null && reg.qtdObjetos !== undefined) ? reg.qtdObjetos : '';
+      document.getElementById('edit-recolhas').value = (reg.qtdRecolhas !== null && reg.qtdRecolhas !== undefined) ? reg.qtdRecolhas : '';
+      document.getElementById('edit-avisados').value = (reg.qtdAvisados !== null && reg.qtdAvisados !== undefined) ? reg.qtdAvisados : '';
+      document.getElementById('edit-retornos').value = (reg.qtdRetornos !== null && reg.qtdRetornos !== undefined) ? reg.qtdRetornos : '';
+      document.getElementById('edit-end-insuf').value = (reg.qtdEndInsuficiente !== null && reg.qtdEndInsuficiente !== undefined) ? reg.qtdEndInsuficiente : '';
+      document.getElementById('edit-recusados').value = (reg.qtdRecusados !== null && reg.qtdRecusados !== undefined) ? reg.qtdRecusados : '';
+      document.getElementById('edit-desc-morada').value = (reg.qtdDescMorada !== null && reg.qtdDescMorada !== undefined) ? reg.qtdDescMorada : '';
 
-      document.getElementById('modal-editar').style.display = 'flex';
+      const modal = document.getElementById('modal-editar');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
     }
 
     function fecharModalEdicao() {
-      document.getElementById('modal-editar').style.display = 'none';
+      const modal = document.getElementById('modal-editar');
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
+
+    // Exportar funções para escopo global do navegador
+    window.abrirModalEdicao = abrirModalEdicao;
+    window.fecharModalEdicao = fecharModalEdicao;
 
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Autenticação
@@ -393,83 +408,117 @@
       });
 
       // 3. Modal event listeners
-      document.getElementById('btn-fechar-modal').addEventListener('click', fecharModalEdicao);
-      document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModalEdicao);
+      const btnFecharModal = document.getElementById('btn-fechar-modal');
+      if (btnFecharModal) btnFecharModal.addEventListener('click', fecharModalEdicao);
+
+      const btnCancelarModal = document.getElementById('btn-cancelar-modal');
+      if (btnCancelarModal) btnCancelarModal.addEventListener('click', fecharModalEdicao);
+
+      const modalEditar = document.getElementById('modal-editar');
+      if (modalEditar) {
+        modalEditar.addEventListener('click', (e) => {
+          if (e.target === modalEditar) {
+            fecharModalEdicao();
+          }
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          fecharModalEdicao();
+        }
+      });
+
+      // Delegação de cliques para botões de edição na lista de registos
+      const containerRegistos = document.getElementById('lista-registos');
+      if (containerRegistos) {
+        containerRegistos.addEventListener('click', (e) => {
+          const btnEditar = e.target.closest('[data-action="editar"]');
+          if (btnEditar) {
+            const id = btnEditar.getAttribute('data-id');
+            if (id) {
+              abrirModalEdicao(id);
+            }
+          }
+        });
+      }
 
       // 4. Salvar Edição com Auditoria
       const formEditar = document.getElementById('form-editar');
-      formEditar.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        CAC.limparAlerta('modal-alert-container');
+      if (formEditar) {
+        formEditar.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          CAC.limparAlerta('modal-alert-container');
 
-        const id = document.getElementById('edit-id').value;
-        const motivo = document.getElementById('edit-motivo').value.trim();
+          const id = document.getElementById('edit-id').value;
+          const motivo = document.getElementById('edit-motivo').value.trim();
 
-        if (!motivo || motivo.length < 3) {
-          CAC.mostrarAlerta('modal-alert-container', 'Por favor, informe uma justificativa válida no motivo da alteração (mínimo 3 caracteres).', 'danger');
-          document.getElementById('edit-motivo').focus();
-          return;
-        }
+          if (!motivo || motivo.length < 3) {
+            CAC.mostrarAlerta('modal-alert-container', 'Por favor, informe uma justificativa válida no motivo da alteração (mínimo 3 caracteres).', 'danger');
+            document.getElementById('edit-motivo').focus();
+            return;
+          }
 
-        const kmInicial = parseInt(document.getElementById('edit-km-inicial').value, 10);
-        const kmFinalStr = document.getElementById('edit-km-final').value;
-        const kmFinal = kmFinalStr !== '' ? parseInt(kmFinalStr, 10) : null;
+          const kmInicial = parseInt(document.getElementById('edit-km-inicial').value, 10);
+          const kmFinalStr = document.getElementById('edit-km-final').value;
+          const kmFinal = kmFinalStr !== '' ? parseInt(kmFinalStr, 10) : null;
 
-        if (kmFinal !== null && !isNaN(kmInicial) && kmFinal <= kmInicial) {
-          CAC.mostrarAlerta('modal-alert-container', `O Km Final (${kmFinal}) deve ser superior ao Km Inicial (${kmInicial}). O percurso percorrido não pode ser zero.`, 'danger');
-          document.getElementById('edit-km-final').focus();
-          return;
-        }
+          if (kmFinal !== null && !isNaN(kmInicial) && kmFinal <= kmInicial) {
+            CAC.mostrarAlerta('modal-alert-container', `O Km Final (${kmFinal}) deve ser superior ao Km Inicial (${kmInicial}). O percurso percorrido não pode ser zero.`, 'danger');
+            document.getElementById('edit-km-final').focus();
+            return;
+          }
 
-        const matriculaDia = document.getElementById('edit-matricula').value.trim().toUpperCase();
-        const giroDia = document.getElementById('edit-giro').value.trim().toUpperCase();
-        const qtdObjetos = parseInt(document.getElementById('edit-objetos').value || 0, 10);
-        const qtdRecolhas = parseInt(document.getElementById('edit-recolhas').value || 0, 10);
-        const qtdAvisados = parseInt(document.getElementById('edit-avisados').value || 0, 10);
-        const qtdRetornos = parseInt(document.getElementById('edit-retornos').value || 0, 10);
-        const qtdEndInsuficiente = parseInt(document.getElementById('edit-end-insuf').value || 0, 10);
-        const qtdRecusados = parseInt(document.getElementById('edit-recusados').value || 0, 10);
-        const qtdDescMorada = parseInt(document.getElementById('edit-desc-morada').value || 0, 10);
+          const matriculaDia = document.getElementById('edit-matricula').value.trim().toUpperCase();
+          const giroDia = document.getElementById('edit-giro').value.trim().toUpperCase();
+          const qtdObjetos = parseInt(document.getElementById('edit-objetos').value || 0, 10);
+          const qtdRecolhas = parseInt(document.getElementById('edit-recolhas').value || 0, 10);
+          const qtdAvisados = parseInt(document.getElementById('edit-avisados').value || 0, 10);
+          const qtdRetornos = parseInt(document.getElementById('edit-retornos').value || 0, 10);
+          const qtdEndInsuficiente = parseInt(document.getElementById('edit-end-insuf').value || 0, 10);
+          const qtdRecusados = parseInt(document.getElementById('edit-recusados').value || 0, 10);
+          const qtdDescMorada = parseInt(document.getElementById('edit-desc-morada').value || 0, 10);
 
-        const totalIncEdicao = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
-        if (totalIncEdicao > qtdObjetos) {
-          CAC.mostrarAlerta('modal-alert-container', 'A soma das incidências (não entregues) não pode ser maior do que a Quantidade Total de Objetos.', 'danger');
-          return;
-        }
+          const totalIncEdicao = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
+          if (totalIncEdicao > qtdObjetos) {
+            CAC.mostrarAlerta('modal-alert-container', 'A soma das incidências (não entregues) não pode ser maior do que a Quantidade Total de Objetos.', 'danger');
+            return;
+          }
 
-        const btnSalvar = document.getElementById('btn-salvar-edicao');
-        btnSalvar.disabled = true;
-        btnSalvar.textContent = 'A guardar...';
+          const btnSalvar = document.getElementById('btn-salvar-edicao');
+          btnSalvar.disabled = true;
+          btnSalvar.textContent = 'A guardar...';
 
-        const res = await CAC.api(`/registos/${id}`, {
-          method: 'PUT',
-          body: {
-            motivo,
-            kmInicial,
-            kmFinal,
-            matriculaDia,
-            giroDia,
-            qtdObjetos,
-            qtdRecolhas,
-            qtdAvisados,
-            qtdRetornos,
-            qtdEndInsuficiente,
-            qtdRecusados,
-            qtdDescMorada
+          const res = await CAC.api(`/registos/${id}`, {
+            method: 'PUT',
+            body: {
+              motivo,
+              kmInicial,
+              kmFinal,
+              matriculaDia,
+              giroDia,
+              qtdObjetos,
+              qtdRecolhas,
+              qtdAvisados,
+              qtdRetornos,
+              qtdEndInsuficiente,
+              qtdRecusados,
+              qtdDescMorada
+            }
+          });
+
+          btnSalvar.disabled = false;
+          btnSalvar.textContent = 'Guardar Alterações';
+
+          if (res.ok) {
+            fecharModalEdicao();
+            CAC.mostrarAlerta('alert-container', 'Registo alterado e histórico de auditoria gravado com sucesso!', 'success');
+            carregarRegistos();
+          } else {
+            CAC.mostrarAlerta('modal-alert-container', res.data.mensagem || 'Falha ao atualizar registo.', 'danger');
           }
         });
-
-        btnSalvar.disabled = false;
-        btnSalvar.textContent = 'Guardar Alterações';
-
-        if (res.ok) {
-          fecharModalEdicao();
-          CAC.mostrarAlerta('alert-container', 'Registo alterado e histórico de auditoria gravado com sucesso!', 'success');
-          carregarRegistos();
-        } else {
-          CAC.mostrarAlerta('modal-alert-container', res.data.mensagem || 'Falha ao atualizar registo.', 'danger');
-        }
-      });
+      }
 
       // Carregar lista inicial
       carregarRegistos();

@@ -19,6 +19,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-009** | 2026-09-30 | Backend / E-mail Transacional Brevo | Formato inválido de `EMAIL_FROM` (preenchido com hostname) e link de recuperação expondo porta interna. | Variável `EMAIL_FROM` configurada como `smtp-relay.brevo.com` em vez de e-mail de remetente verificado; falta de `APP_URL` para links via proxy reverso. | Correção de `EMAIL_FROM` no `.env` para e-mail verificado da conta, adição de `APP_URL=http://localhost`, suporte a porta 587/465 com timeouts no `mailer.js` e criação do script `test-email.js`. | **Resolvido** |
 | **ERR-010** | 2026-09-30 | Backend / Autenticação & Brevo SMTP | E-mail de recuperação não recebido: desincronização de .env no container e falha de autenticação SMTP 535. | Container Docker não possuía montagem de `/app/.env` (mantendo variáveis antigas vazias) e `SMTP_USER` preenchido com e-mail pessoal em vez do Login técnico do Brevo. | Montagem de `./.env:/app/.env` e `./logs:/app/logs` no `docker-compose.yml`, reload com `override: true`, `nodemon.json`, detecção e logging de erros 535/550 no `mailer.js` e persistência em `logs/app-error.log`. | **Resolvido** |
 | **ERR-011** | 2026-10-04 | Segurança / Backend & Frontend | Exposição de detalhes de erro em `/api/health`, ausência de security headers HTTP, ausência de error handler global no Express e sanitização XSS no frontend. | Detalhes de exceção bruta do Prisma/PostgreSQL eram retornados no JSON da rota `/health`; ausência de middleware para headers de proteção HTTP e sanitização client-side incompleta. | Ocultação de detalhes internos em `/health` com registro em `logs/app-error.log`, headers de segurança HTTP (`nosniff`, `SAMEORIGIN`, `nosniff`), error handler global 500/404, sanitização XSS via `CAC.escapeHtml` e auditoria de segurança em `logs/security.log`. | **Resolvido** |
+| **ERR-012** | 2026-10-04 | Frontend / Histórico e Modal | Botão "Editar com Auditoria" inoperante em `registos.html`. | Comparação estrita de tipo (`r.id === id`), `z-index` baixo na modal (`100`) e ausência de delegação de eventos para elementos criados dinamicamente no DOM. | Atualizado `z-index` para `1000`, normalização de ID para string (`String(r.id).trim() === idBusca`), exportação explícita de `abrirModalEdicao`/`fecharModalEdicao` no `window`, adição de `data-action="editar"` com event delegation e suporte a tecla `Escape`. | **Resolvido** |
 
 ---
 
@@ -101,6 +102,20 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   2. Em `backend/src/index.js`, adicionado middleware de headers HTTP de segurança (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin` e remoção de `X-Powered-By`), middleware para 404 em formato JSON e error handler global 500 integrado ao logger.
   3. Nos controladores `AuthController.js`, `PerfilController.js` e `RegistoDiarioController.js`, tentativas de acesso indevido (403) e falhas de autenticação agora são auditadas em `logs/security.log` via `logSeguranca()`.
   4. Em `frontend/public/js/app.js` e `frontend/public/registos.html`, implementada a função `CAC.escapeHtml()` com sanitização ativa dos dados dinâmicos renderizados na interface.
+
+### Caso ERR-012: Falha na Abertura do Modal de Edição com Auditoria em registos.html
+- **Contexto:** Ao acessar `http://localhost/registos.html` e clicar no botão "Editar com Auditoria" de um card de turno no histórico, o modal não era exibido na tela.
+- **Impacto:** Impossibilidade do operador ou administrador realizar correções justificadas em turnos já gravados pela interface web.
+- **Causa-Raiz:**
+  1. *Comparação estrita de tipo no array de registos:* A busca `todosRegistos.find(r => r.id === id)` utilizava igualdade estrita (`===`). Dependendo do formato em que `r.id` chegava na resposta da API (número ou string), a comparação com a string do ID sanitizado falhava silenciosamente sem exibir o modal.
+  2. *Escopo de funções e renderização dinâmica:* Os botões gerados dinamicamente via `innerHTML` dependiam exclusivamente de manipuladores `onclick` inline que podiam falhar caso não estivessem garantidos no escopo global `window`.
+  3. *Camada de sobreposição (z-index):* O `z-index` do `.modal-overlay` estava definido em `100`, valor baixo que podia entrar em conflito com elementos de navegação ou layouts responsivos.
+- **Resolução:**
+  1. Em `frontend/public/registos.html`, o `z-index` de `.modal-overlay` foi elevado para `1000`.
+  2. A função `abrirModalEdicao(id)` foi refatorada para normalizar a comparação por string (`String(r.id).trim() === idBusca`) e tratar campos nulos de turnos abertos (`null` / `undefined`) de forma segura.
+  3. As funções `abrirModalEdicao` e `fecharModalEdicao` foram explicitamente associadas ao escopo global `window`.
+  4. Adicionado o atributo `data-action="editar"` e `data-id` nos botões de card, com listener de delegação de eventos no container `#lista-registos`.
+  5. Adicionado suporte a fechamento ao clicar no backdrop e via tecla `Escape`.
 
 ---
 
