@@ -107,16 +107,16 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 - **Contexto:** Ao acessar `http://localhost/registos.html` e clicar no botão "Editar com Auditoria" de um card de turno no histórico, o modal não era exibido na tela.
 - **Impacto:** Impossibilidade do operador ou administrador realizar correções justificadas em turnos já gravados pela interface web.
 - **Causa-Raiz:**
-  1. *Comparação estrita de tipo no array de registos:* A busca `todosRegistos.find(r => r.id === id)` utilizava igualdade estrita (`===`). Dependendo do formato em que `r.id` chegava na resposta da API (número ou string), a comparação com a string do ID sanitizado falhava silenciosamente sem exibir o modal.
-  2. *Cache estático do navegador sem cabeçalhos No-Cache:* O Nginx não enviava cabeçalhos de controle de cache (`Cache-Control: no-cache, no-store`), mantendo versões desatualizadas de scripts e páginas em memória nos navegadores.
-  3. *Escopo de funções e renderização dinâmica:* Os botões gerados dinamicamente via `innerHTML` dependiam exclusivamente de manipuladores `onclick` inline que podiam falhar caso não estivessem garantidos no escopo global `window`.
-  4. *Camada de sobreposição (z-index e viewport):* O overlay do modal carecia de `width: 100vw; height: 100vh;` explícito e `z-index: 9999` para sobrepor todos os elementos fixos de cabeçalho e navegação.
+  1. *Colisão de CSS com Design System (opacity e visibility ocultas):* O arquivo `frontend/public/css/custom.css` define para `.modal-overlay` as propriedades `opacity: 0; visibility: hidden;`, tornando o elemento visível exclusivamente quando acompanhado da classe `.modal-overlay.active`. Como o script de `registos.html` apenas alterava `modal.style.display = 'flex'` sem adicionar a classe `.active`, o modal mantinha-se com `visibility: hidden` e `opacity: 0`, ficando 100% invisível ao usuário.
+  2. *Comparação estrita de tipo no array de registos:* A busca `todosRegistos.find(r => r.id === id)` utilizava igualdade estrita (`===`). Dependendo do formato em que `r.id` chegava na resposta da API (número ou string), a comparação com a string do ID sanitizado falhava silenciosamente sem exibir o modal.
+  3. *Cache estático do navegador sem cabeçalhos No-Cache:* O Nginx não enviava cabeçalhos de controle de cache (`Cache-Control: no-cache, no-store`), mantendo versões desatualizadas de scripts e páginas em memória nos navegadores.
+  4. *Escopo de funções e renderização dinâmica:* Os botões gerados dinamicamente via `innerHTML` dependiam exclusivamente de manipuladores `onclick` inline que podiam falhar caso não estivessem garantidos no escopo global `window`.
 - **Resolução:**
-  1. Em `frontend/nginx.conf`, adicionados os headers `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0`, `Pragma: no-cache` e `Expires: 0`, e configurada a montagem do volume no `docker-compose.yml`.
-  2. Em `frontend/public/registos.html`, o `z-index` de `.modal-overlay` foi elevado para `9999` com dimensões `100vw x 100vh` e `backdrop-filter`.
-  3. A função `abrirModalEdicao(id, event)` foi transformada em assíncrona, com busca resiliente por string, fallback automático de consulta à API (`GET /api/registos/:id`) caso o item não esteja no estado local, e preenchimento seguro de todos os campos via `preencherCampo`.
-  4. As funções `abrirModalEdicao` e `fecharModalEdicao` foram exportadas no escopo `window`.
-  5. Adicionado `type="button"`, atributo `data-action="editar"`, `data-id` e `event.stopPropagation()` para prevenir conflitos de eventos.
+  1. Em `frontend/public/registos.html`, o script passou a adicionar e remover explicitamente a classe `.active` (`modal.classList.add('active')` e `modal.classList.remove('active')`), além de forçar `opacity: 1; visibility: visible;` inline e via regra explícita `.modal-overlay.active`.
+  2. Em `frontend/public/css/custom.css`, o `z-index` de `.modal-overlay` foi elevado para `9999` para garantir sobreposição a todos os componentes de navegação.
+  3. Em `frontend/nginx.conf`, adicionados os headers `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0`, `Pragma: no-cache` e `Expires: 0`, e configurada a montagem do volume no `docker-compose.yml`.
+  4. A função `abrirModalEdicao(id, event)` foi transformada em assíncrona, com busca resiliente por string, fallback automático de consulta à API (`GET /api/registos/:id`) caso o item não esteja no estado local, e preenchimento seguro de todos os campos via `preencherCampo`.
+  5. As funções `abrirModalEdicao` e `fecharModalEdicao` foram exportadas no escopo `window`.
 
 ---
 
