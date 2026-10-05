@@ -1,0 +1,38 @@
+# ==========================================
+# CAC Atividades - Docker Ignore
+# Isolamento estrito de arquivos em produção
+# ==========================================
+
+# Controle de versão e automações
+.git/
+.github/
+
+# Documentação, prompts e contexto de IA
+docs/
+prompts/
+AGENTS.md
+CLAUDE.md
+README.md
+*.md
+
+# Credenciais e variáveis de ambiente
+.env
+.env.*
+
+# Logs do sistema e temporários
+logs/
+*.log
+tmp/
+temp/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Configurações de IDEs e editores
+.vscode/
+.idea/
+
+# Dependências locais e debug
+node_modules/
+npm-debug.log*

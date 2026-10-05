@@ -1,3 +1,22 @@
-node_modules
-npm-debug.log
+# Dependências locais e temporários
+node_modules/
+npm-debug.log*
+
+# Credenciais e variáveis de ambiente
 .env
+.env.*
+
+# Logs
+logs/
+*.log
+tmp/
+temp/
+
+# Arquivos de sistema operacional e IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Documentação
+*.md
