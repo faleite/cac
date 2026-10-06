@@ -65,6 +65,7 @@ function gerarMensagemWhatsapp(registo) {
   const descMorada = formatarIncidenciaValor(registo.qtdDescMorada);
 
   const linhas = [
+    `*Controlo Diário*`,
     `*_${dataFormatada}_*`,
     ``,
     `*Início*`,

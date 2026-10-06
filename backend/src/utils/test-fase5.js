@@ -82,6 +82,7 @@ function testarUnitariosFormatters() {
 
   const msg = gerarMensagemWhatsapp(mockRegisto);
   
+  assert(msg.includes('*Controlo Diário*'), 'Deve conter título em negrito');
   assert(msg.includes('*_10/08/2026_*'), 'Deve conter data em itálico/negrito');
   assert(msg.includes('*Início*'), 'Deve conter seção *Início*');
   assert(msg.includes('*Final*'), 'Deve conter seção *Final*');
@@ -97,7 +98,7 @@ function testarUnitariosFormatters() {
   assert(msg.includes('Qtd desc morada.: *1*'), 'Qtd desc morada deve ser *1*');
 
 
-  console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial CTT');
+  console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial AIRAC');
 }
 
 /**
