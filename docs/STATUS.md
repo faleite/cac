@@ -52,6 +52,8 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
   - [x] Atualização de `AuthController.js` (registo, login, me, recuperação), `PerfilController.js` (obter e atualizar perfil) e `RegistoDiarioController.js` (listagem, whatsapp-preview, etc.).
   - [x] Atualização de `formatters.js` para compor o nome no relatório WhatsApp com `${primeiroNome} ${ultimoNome}`.
   - [x] Telas `frontend/public/registo.html` e `frontend/public/perfil.html` adaptadas com campos individuais "Primeiro Nome" e "Último Nome", mantendo ergonomia de altura mínima de 56px e grid responsivo.
+  - [x] Restrição estrita de palavra única: campos "Primeiro Nome" e "Último Nome" rejeitam termos compostos com espaços tanto no frontend quanto no backend com validação por regex (`^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$`).
+  - [x] Correção de workflow e deploy: regeneração do Prisma Client e reinicialização automática do backend adicionadas ao script `deploy.yml` e `package.json`, eliminando o erro HTTP 500 no login pós-migração.
   - [x] Preservação reativa da saudação de barra de navegação e avatar (`primeiroNome` / `nome`).
   - [x] Atualização e aprovação de 100% dos testes automatizados (`test-fase3.js`, `test-fase4.js`, `test-fase5.js`, `test-rgpd.js`, `test-db.js`).
 

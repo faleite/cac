@@ -21,6 +21,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-011** | 2026-10-04 | Segurança / Backend & Frontend | Exposição de detalhes de erro em `/api/health`, ausência de security headers HTTP, ausência de error handler global no Express e sanitização XSS no frontend. | Detalhes de exceção bruta do Prisma/PostgreSQL eram retornados no JSON da rota `/health`; ausência de middleware para headers de proteção HTTP e sanitização client-side incompleta. | Ocultação de detalhes internos em `/health` com registro em `logs/app-error.log`, headers de segurança HTTP (`nosniff`, `SAMEORIGIN`, `nosniff`), error handler global 500/404, sanitização XSS via `CAC.escapeHtml` e auditoria de segurança em `logs/security.log`. | **Resolvido** |
 | **ERR-012** | 2026-10-04 | Frontend / Histórico e Modal | Botão "Editar com Auditoria" inoperante em `registos.html`. | Comparação estrita de tipo (`r.id === id`), `z-index` baixo na modal (`100`) e ausência de delegação de eventos para elementos criados dinamicamente no DOM. | Atualizado `z-index` para `1000`, normalização de ID para string (`String(r.id).trim() === idBusca`), exportação explícita de `abrirModalEdicao`/`fecharModalEdicao` no `window`, adição de `data-action="editar"` com event delegation e suporte a tecla `Escape`. | **Resolvido** |
 | **ERR-013** | 2026-10-10 | Backend & Frontend / Validação de Nomes | Campos "Primeiro Nome" e "Último Nome" aceitavam múltiplos nomes/palavras com espaços. | Ausência de restrição de palavra única e rejeição de caracteres de espaçamento nos controladores e inputs. | Adicionada validação estrita com regex `^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$` e bloqueio de espaços no backend (`AuthController.js` e `PerfilController.js`) com HTTP 400; no frontend (`registo.html` e `perfil.html`) bloqueio da tecla espaço, sanitização em evento `input`, atributo `pattern` e validação com feedback visual no `submit`. | **Resolvido** |
+| **ERR-014** | 2026-10-10 | Deploy & Prisma ORM / Servidor Oracle | Erro HTTP 500 no `POST /api/auth/login` em produção após migração de colunas. | A migração removeu a coluna legada `nome_completo`, mas o `@prisma/client` no container não foi regenerado e o backend não foi reiniciado após `prisma migrate deploy`, tentando buscar a coluna excluída. | Configurado `"dev": "prisma generate && nodemon src/index.js"` no `package.json`, atualizado o workflow de deploy (`deploy.yml`) para executar `npm run prisma:generate`, `npm run prisma:migrate` e `docker compose restart backend`. | **Resolvido** |
 
 ---
 
@@ -132,6 +133,19 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   4. Adicionada validação explícita no evento de `submit` antes do envio, com foco automático no campo irregular e alerta visual de erro.
   5. Atualizados e adicionados testes automatizados em `backend/src/utils/test-fase3.js` validando que tentativas de registo e edição de perfil com múltiplos termos retornam HTTP 400.
 
+### Caso ERR-014: Erro 500 no Início de Sessão em Produção após Migração do Prisma
+- **Contexto:** Após o push do commit de migração que removeu `nome_completo` e adicionou `primeiro_nome` e `ultimo_nome`, ao acessar `https://cac.faleite.xyz/login.html` e submeter credenciais válidas, a API retornava HTTP 500 (`{"status":"erro","mensagem":"Ocorreu um erro ao processar o início de sessão."}`).
+- **Impacto:** Bloqueio total de autenticação e login de usuários no ambiente de produção.
+- **Causa-Raiz:**
+  1. No workflow de deploy do GitHub Actions (`.github/workflows/deploy.yml`), a etapa pós-build executava apenas `docker compose exec -T backend npm run prisma:migrate` (`prisma migrate deploy`).
+  2. O comando `prisma migrate deploy` apenas aplica as migrações SQL no banco PostgreSQL, sem invocar `prisma generate`.
+  3. No `docker-compose.yml`, o container backend possui volume anônimo montado em `/app/node_modules`. Com essa montagem, a pasta de dependências do container preservou o client `@prisma/client` antigo pré-gerado, que ainda continha referências ao campo legado `nome_completo`.
+  4. Além disso, o container backend não era reiniciado após a aplicação das migrações, mantendo em memória a conexão e modelos desatualizados. Quando o Prisma executava a consulta `prisma.usuario.findFirst` no login, o SQL gerado tentava ler a coluna `nome_completo` já excluída da tabela `usuarios`, provocando erro do PostgreSQL capturado no bloco `catch` do `AuthController.login`.
+- **Resolução:**
+  1. Em `backend/package.json`, o comando `"dev"` foi ajustado para `"dev": "prisma generate && nodemon src/index.js"`, garantindo que o Prisma Client seja sempre regenerado dinamicamente antes de inicializar o servidor Express no container.
+  2. No workflow de deploy `.github/workflows/deploy.yml`, foi adicionada a execução explícita de `docker compose exec -T backend npm run prisma:generate`, seguida de `docker compose exec -T backend npm run prisma:migrate` e o comando de reinicialização `docker compose restart backend`.
+  3. Com isso, os modelos em tempo de execução e a base de dados PostgreSQL mantêm paridade contínua em qualquer deploy automatizado.
+
 ---
 
 ## 3. Diretrizes para Registro de Novos Erros
@@ -140,3 +154,4 @@ Ao se deparar com qualquer erro ou comportamento inesperado:
 1. Registre uma nova linha na tabela acima com ID sequencial (`ERR-002`, `ERR-003`, etc.).
 2. Descreva a causa-raiz identificada e o caminho adotado para a resolução definitiva.
 3. Se o erro for recorrente ou exigir cautela futura, documente uma observação no `AGENTS.md` ou no plano de implementação correspondente.
+

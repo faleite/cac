@@ -25,5 +25,7 @@ jobs:
             cd ${{ secrets.ORACLE_PATH }} && \
             git pull origin main && \
             docker compose up -d --build && \
-            docker compose exec -T backend npm run prisma:migrate
+            docker compose exec -T backend npm run prisma:generate && \
+            docker compose exec -T backend npm run prisma:migrate && \
+            docker compose restart backend
           "
