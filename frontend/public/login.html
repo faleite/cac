@@ -74,7 +74,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const usuario = await CAC.obterSessao();
       if (usuario) {
-        window.location.href = '/perfil.html';
+        window.location.href = '/abertura.html';
       }
     });
 
@@ -102,7 +102,7 @@
       if (res.ok) {
         CAC.mostrarAlerta('alerta-container', 'Sessão iniciada com sucesso. A redirecionar...', 'success');
         setTimeout(() => {
-          window.location.href = '/perfil.html';
+          window.location.href = '/abertura.html';
         }, 600);
       } else {
         CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Credenciais de acesso incorretas. Tente novamente.', 'danger');
