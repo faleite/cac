@@ -340,21 +340,25 @@
       });
     });
 
-    form.addEventListener('submit', async (e) => {
+    const formPerfil = document.getElementById('form-perfil');
+    const btnSalvar = document.getElementById('btn-salvar');
+
+    formPerfil.addEventListener('submit', async (e) => {
       e.preventDefault();
       CAC.limparAlerta('alerta-container');
 
       const primeiro_nome = document.getElementById('primeiro_nome').value.trim();
       const ultimo_nome = document.getElementById('ultimo_nome').value.trim();
       const telemovel = document.getElementById('telemovel').value.trim();
-      const matricula_padrao = document.getElementById('matricula_padrao').value.trim();
-      const giro_padrao = document.getElementById('giro_padrao').value.trim();
+      const matricula_padrao = document.getElementById('matricula_padrao').value.trim().toUpperCase();
+      const giro_padrao = document.getElementById('giro_padrao').value.trim().toUpperCase();
       const senha_atual = document.getElementById('senha_atual').value;
       const nova_senha = document.getElementById('nova_senha').value;
       const confirmar_nova_senha = document.getElementById('confirmar_nova_senha').value;
 
       if (!primeiro_nome || !ultimo_nome) {
         CAC.mostrarAlerta('alerta-container', 'Primeiro Nome e Último Nome são de preenchimento obrigatório.', 'danger');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
@@ -362,17 +366,40 @@
       if (/\s/.test(primeiro_nome) || !nomeRegex.test(primeiro_nome)) {
         CAC.mostrarAlerta('alerta-container', 'O Primeiro Nome deve conter apenas um único nome (sem espaços ou números).', 'danger');
         document.getElementById('primeiro_nome').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
       if (/\s/.test(ultimo_nome) || !nomeRegex.test(ultimo_nome)) {
         CAC.mostrarAlerta('alerta-container', 'O Último Nome deve conter apenas um único nome (sem espaços ou números).', 'danger');
         document.getElementById('ultimo_nome').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
-      if (nova_senha && nova_senha !== confirmar_nova_senha) {
-        CAC.mostrarAlerta('alerta-container', 'A confirmação da nova palavra-passe não coincide.', 'danger');
+      if (nova_senha) {
+        if (!senha_atual) {
+          CAC.mostrarAlerta('alerta-container', 'Para definir uma nova palavra-passe, deve introduzir a palavra-passe atual.', 'danger');
+          document.getElementById('senha_atual').focus();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        if (nova_senha.length < 6) {
+          CAC.mostrarAlerta('alerta-container', 'A nova palavra-passe deve ter pelo menos 6 caracteres.', 'danger');
+          document.getElementById('nova_senha').focus();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        if (nova_senha !== confirmar_nova_senha) {
+          CAC.mostrarAlerta('alerta-container', 'A confirmação da nova palavra-passe não coincide.', 'danger');
+          document.getElementById('confirmar_nova_senha').focus();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      } else if (senha_atual) {
+        CAC.mostrarAlerta('alerta-container', 'Introduziu a palavra-passe atual, mas não indicou a nova palavra-passe.', 'danger');
+        document.getElementById('nova_senha').focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
@@ -385,8 +412,8 @@
           primeiro_nome,
           ultimo_nome,
           telemovel,
-          matricula_padrao,
-          giro_padrao,
+          matricula_padrao: matricula_padrao || null,
+          giro_padrao: giro_padrao || null,
           senha_atual: senha_atual || undefined,
           nova_senha: nova_senha || undefined,
           confirmar_nova_senha: confirmar_nova_senha || undefined
@@ -398,6 +425,8 @@
 
       if (res.ok) {
         CAC.mostrarAlerta('alerta-container', 'Perfil e preferências atualizados com sucesso!', 'success');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         document.getElementById('senha_atual').value = '';
         document.getElementById('nova_senha').value = '';
         document.getElementById('confirmar_nova_senha').value = '';
@@ -417,6 +446,7 @@
         carregarPerfil();
       } else {
         CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Ocorreu um erro ao atualizar o perfil.', 'danger');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   </script>
