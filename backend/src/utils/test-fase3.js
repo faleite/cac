@@ -99,6 +99,8 @@ async function runTests() {
       numero_sc: testSC,
       telemovel: '912345678',
       email: testEmail,
+      matricula_padrao: 'bi-04-nh',
+      giro_padrao: '2825h',
       senha: testSenha,
       confirmar_senha: testSenha,
       aceitou_termos: true,
@@ -111,7 +113,7 @@ async function runTests() {
     assert(regRes.body.status === 'sucesso', 'Corpo da resposta deve indicar sucesso');
     assert(regReq.session.usuario && regReq.session.usuario.id, 'Sessão deve ser iniciada com usuário');
 
-    // Verificar se a auto-elevação foi BLOQUEADA no banco
+    // Verificar se a auto-elevação foi BLOQUEADA no banco e se matricula/giro foram salvos
     const userCriado = await prisma.usuario.findFirst({
       where: { numeroSc: testSC.toUpperCase() },
       include: { perfilConfiguracao: true }
@@ -119,6 +121,8 @@ async function runTests() {
     assert(userCriado !== null, 'Usuário deve existir no banco de dados');
     assert(userCriado.perfil === 'operador', `Perfil DEVE ser 'operador' ignorando injeção (Perfil no banco: ${userCriado.perfil})`);
     assert(userCriado.perfilConfiguracao !== null, 'PerfilConfiguracao deve ter sido criado automaticamente');
+    assert(userCriado.perfilConfiguracao.matriculaPadrao === 'BI-04-NH', `Matrícula padrão deve ser salva em maiúsculas (Recebido: ${userCriado.perfilConfiguracao.matriculaPadrao})`);
+    assert(userCriado.perfilConfiguracao.giroPadrao === '2825H', `Giro padrão deve ser salvo em maiúsculas (Recebido: ${userCriado.perfilConfiguracao.giroPadrao})`);
 
     // 2. Teste de Login com Número SC
     console.log('\n--- 2. Teste de Login com SC ---');

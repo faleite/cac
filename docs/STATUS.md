@@ -55,6 +55,11 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
   - [x] Restrição estrita de palavra única: campos "Primeiro Nome" e "Último Nome" rejeitam termos compostos com espaços tanto no frontend quanto no backend com validação por regex (`^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$`).
   - [x] Correção de workflow e deploy: regeneração do Prisma Client e reinicialização automática do backend adicionadas ao script `deploy.yml` e `package.json`, eliminando o erro HTTP 500 no login pós-migração.
   - [x] Preservação reativa da saudação de barra de navegação e avatar (`primeiroNome` / `nome`).
+  - [x] **Inclusão de Matrícula e Giro Padrão no Auto-Registo (`registo.html`)**:
+    - [x] Campos opcionais "Matrícula do Veículo Padrão" e "Código do Giro / Rota Padrão" adicionados ao formulário de cadastro em grid de 2 colunas responsivo, com altura de 56px e caixa alta (`text-transform: uppercase`).
+    - [x] Persistência atômica via transação Prisma em `AuthController.js`, populando `perfilConfiguracao` no momento da criação da conta.
+    - [x] Redirecionamento pós-registo ajustado diretamente para a tela de abertura de turno (`abertura.html`).
+    - [x] Suíte de testes automatizados `test-fase3.js` atualizada para validar persistência e sanitização em maiúsculas de ambos os campos.
   - [x] Atualização e aprovação de 100% dos testes automatizados (`test-fase3.js`, `test-fase4.js`, `test-fase5.js`, `test-rgpd.js`, `test-db.js`).
 
 ---

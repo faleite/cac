@@ -56,6 +56,17 @@
           <input class="form-control" type="email" id="email" name="email" placeholder="colaborador@correios.pt" required>
         </div>
 
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="matricula_padrao">Matrícula do Veículo</label>
+            <input class="form-control" type="text" id="matricula_padrao" name="matricula_padrao" placeholder="Ex: BI-04-NH" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="giro_padrao">Código do Giro / Rota</label>
+            <input class="form-control" type="text" id="giro_padrao" name="giro_padrao" placeholder="Ex: 2825H" style="text-transform: uppercase;">
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="senha">Palavra-passe</label>
           <div style="position: relative;">
@@ -148,6 +159,8 @@
       const numero_sc = document.getElementById('numero_sc').value.trim().toUpperCase();
       const telemovel = document.getElementById('telemovel').value.trim();
       const email = document.getElementById('email').value.trim().toLowerCase();
+      const matricula_padrao = document.getElementById('matricula_padrao').value.trim().toUpperCase();
+      const giro_padrao = document.getElementById('giro_padrao').value.trim().toUpperCase();
       const senha = document.getElementById('senha').value;
       const confirmar_senha = document.getElementById('confirmar_senha').value;
 
@@ -180,6 +193,8 @@
           numero_sc,
           telemovel,
           email,
+          matricula_padrao: matricula_padrao || null,
+          giro_padrao: giro_padrao || null,
           senha,
           confirmar_senha,
           aceitou_termos: true
@@ -190,9 +205,9 @@
       atualizarEstadoBotao();
 
       if (res.ok) {
-        CAC.mostrarAlerta('alerta-container', 'Conta criada com sucesso! A configurar o seu perfil...', 'success');
+        CAC.mostrarAlerta('alerta-container', 'Conta criada com sucesso! A iniciar o seu turno...', 'success');
         setTimeout(() => {
-          window.location.href = '/perfil.html';
+          window.location.href = '/abertura.html';
         }, 800);
       } else {
         CAC.mostrarAlerta('alerta-container', res.data.mensagem || 'Ocorreu um erro ao criar a conta.', 'danger');

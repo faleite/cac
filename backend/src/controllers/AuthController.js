@@ -14,7 +14,7 @@ class AuthController {
    */
   async registo(req, res) {
     try {
-      const { primeiro_nome, ultimo_nome, nome_completo, numero_sc, telemovel, email, senha, confirmar_senha, aceitou_termos } = req.body;
+      const { primeiro_nome, ultimo_nome, nome_completo, numero_sc, telemovel, email, senha, confirmar_senha, aceitou_termos, matricula_padrao, giro_padrao } = req.body;
 
       // Suporte a primeiro_nome + ultimo_nome, com fallback inteligente para nome_completo
       let pNome = primeiro_nome ? primeiro_nome.trim() : '';
@@ -112,11 +112,15 @@ class AuthController {
           }
         });
 
+        // Sanitização de matrícula e giro padrão opcionais
+        const mPadrao = matricula_padrao && typeof matricula_padrao === 'string' && matricula_padrao.trim() ? matricula_padrao.trim().toUpperCase() : null;
+        const gPadrao = giro_padrao && typeof giro_padrao === 'string' && giro_padrao.trim() ? giro_padrao.trim().toUpperCase() : null;
+
         await tx.perfilConfiguracao.create({
           data: {
             usuarioId: usuario.id,
-            matriculaPadrao: null,
-            giroPadrao: null
+            matriculaPadrao: mPadrao,
+            giroPadrao: gPadrao
           }
         });
 
