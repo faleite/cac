@@ -45,7 +45,15 @@ Arquivo vivo de acompanhamento contínuo do progresso, estado de cada fase e pr�
   - [x] Checkbox de consentimento desmarcada por padrão em `registo.html` com reatividade no botão de submissão e links para os Termos de Uso e Política de Privacidade.
   - [x] Criação da página estática `termos-privacidade.html` no *Postal Utility System*.
   - [x] Implementação do Direito ao Esquecimento: rota `DELETE /api/perfil/conta` com transação atômica de deleção definitiva (auditorias, registos de turnos, perfil, anonimização de logs e exclusão do usuário), modal interativo com confirmação por senha em `perfil.html`.
-  - [x] Suíte de testes `test-rgpd.js` com 18 testes automatizados aprovados (100% de sucesso).
+- [x] **Refatoração Crítica: Separação de Nome Completo em Primeiro e Último Nome (Zero Data Loss)**:
+  - [x] Migração de banco de dados `20261010143500_split_nome_completo`: criação das colunas `primeiro_nome` e `ultimo_nome`, migração de dados sem perda com `SPLIT_PART` e `SUBSTRING`, conversão para `NOT NULL` e `DROP COLUMN nome_completo`.
+  - [x] Atualização do `schema.prisma` e regeneração do Prisma Client (`npx prisma generate`).
+  - [x] Atualização de `seed.js` para popular `primeiroNome` e `ultimoNome`.
+  - [x] Atualização de `AuthController.js` (registo, login, me, recuperação), `PerfilController.js` (obter e atualizar perfil) e `RegistoDiarioController.js` (listagem, whatsapp-preview, etc.).
+  - [x] Atualização de `formatters.js` para compor o nome no relatório WhatsApp com `${primeiroNome} ${ultimoNome}`.
+  - [x] Telas `frontend/public/registo.html` e `frontend/public/perfil.html` adaptadas com campos individuais "Primeiro Nome" e "Último Nome", mantendo ergonomia de altura mínima de 56px e grid responsivo.
+  - [x] Preservação reativa da saudação de barra de navegação e avatar (`primeiroNome` / `nome`).
+  - [x] Atualização e aprovação de 100% dos testes automatizados (`test-fase3.js`, `test-fase4.js`, `test-fase5.js`, `test-rgpd.js`, `test-db.js`).
 
 ---
 

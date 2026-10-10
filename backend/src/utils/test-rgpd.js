@@ -92,7 +92,8 @@ async function executarTestesRGPD() {
   const resSemAceite = await requisicao('/api/auth/registo', {
     method: 'POST',
     body: {
-      nome_completo: 'Operador Teste RGPD',
+      primeiro_nome: 'Operador',
+      ultimo_nome: 'Rgpd',
       numero_sc: scTeste,
       telemovel: '912345678',
       email: emailTeste,
@@ -113,7 +114,8 @@ async function executarTestesRGPD() {
   const resComAceite = await requisicao('/api/auth/registo', {
     method: 'POST',
     body: {
-      nome_completo: 'Operador Teste RGPD',
+      primeiro_nome: 'Operador',
+      ultimo_nome: 'Rgpd',
       numero_sc: scTeste,
       telemovel: '912345678',
       email: emailTeste,

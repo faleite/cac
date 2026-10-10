@@ -14,7 +14,16 @@ class AuthController {
    */
   async registo(req, res) {
     try {
-      const { nome_completo, numero_sc, telemovel, email, senha, confirmar_senha, aceitou_termos } = req.body;
+      const { primeiro_nome, ultimo_nome, nome_completo, numero_sc, telemovel, email, senha, confirmar_senha, aceitou_termos } = req.body;
+
+      // Suporte a primeiro_nome + ultimo_nome, com fallback inteligente para nome_completo
+      let pNome = primeiro_nome ? primeiro_nome.trim() : '';
+      let uNome = ultimo_nome ? ultimo_nome.trim() : '';
+      if (!pNome && nome_completo) {
+        const partes = nome_completo.trim().split(/\s+/);
+        pNome = partes[0] || '';
+        uNome = partes.slice(1).join(' ') || '';
+      }
 
       // Validação de consentimento livre e informado (RGPD)
       if (aceitou_termos !== true && aceitou_termos !== 'true') {
@@ -25,10 +34,26 @@ class AuthController {
       }
 
       // Validação de campos obrigatórios
-      if (!nome_completo || !numero_sc || !telemovel || !email || !senha) {
+      if (!pNome || !uNome || !numero_sc || !telemovel || !email || !senha) {
         return res.status(400).json({
           status: 'erro',
           mensagem: 'Todos os campos são de preenchimento obrigatório.'
+        });
+      }
+
+      // Validação estrita: apenas um único nome em cada campo (sem espaços nem números)
+      const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/;
+      if (/\s/.test(pNome) || !nomeRegex.test(pNome)) {
+        return res.status(400).json({
+          status: 'erro',
+          mensagem: 'O primeiro nome deve conter apenas um único nome (sem espaços ou números).'
+        });
+      }
+
+      if (/\s/.test(uNome) || !nomeRegex.test(uNome)) {
+        return res.status(400).json({
+          status: 'erro',
+          mensagem: 'O último nome deve conter apenas um único nome (sem espaços ou números).'
         });
       }
 
@@ -74,7 +99,8 @@ class AuthController {
         const agora = new Date();
         const usuario = await tx.usuario.create({
           data: {
-            nomeCompleto: nome_completo.trim(),
+            primeiroNome: pNome,
+            ultimoNome: uNome,
             numeroSc: scFormatado,
             telemovel: telemovel.trim(),
             email: emailFormatado,
@@ -100,7 +126,9 @@ class AuthController {
       // Estabelecer sessão do usuário recém-criado
       req.session.usuario = {
         id: novoUsuario.id.toString(),
-        nome: novoUsuario.nomeCompleto,
+        nome: `${novoUsuario.primeiroNome} ${novoUsuario.ultimoNome}`.trim(),
+        primeiroNome: novoUsuario.primeiroNome,
+        ultimoNome: novoUsuario.ultimoNome,
         numeroSc: novoUsuario.numeroSc,
         email: novoUsuario.email,
         perfil: novoUsuario.perfil
@@ -186,7 +214,9 @@ class AuthController {
       // Estabelecer sessão ativa
       req.session.usuario = {
         id: usuario.id.toString(),
-        nome: usuario.nomeCompleto,
+        nome: `${usuario.primeiroNome} ${usuario.ultimoNome}`.trim(),
+        primeiroNome: usuario.primeiroNome,
+        ultimoNome: usuario.ultimoNome,
         numeroSc: usuario.numeroSc,
         email: usuario.email,
         perfil: usuario.perfil
@@ -261,7 +291,9 @@ class AuthController {
         autenticado: true,
         usuario: {
           id: usuario.id.toString(),
-          nome: usuario.nomeCompleto,
+          nome: `${usuario.primeiroNome} ${usuario.ultimoNome}`.trim(),
+          primeiroNome: usuario.primeiroNome,
+          ultimoNome: usuario.ultimoNome,
           numeroSc: usuario.numeroSc,
           telemovel: usuario.telemovel,
           email: usuario.email,
@@ -326,7 +358,8 @@ class AuthController {
         // Montar a URL base da requisição (prioriza APP_URL do .env)
         const hostBaseUrl = config.appUrl || `${req.protocol}://${req.get('host')}`;
 
-        const resultadoEnvio = await enviarEmailRecuperacao(usuario.email, usuario.nomeCompleto, token, hostBaseUrl);
+        const nomeUsuario = `${usuario.primeiroNome} ${usuario.ultimoNome}`.trim();
+        const resultadoEnvio = await enviarEmailRecuperacao(usuario.email, nomeUsuario, token, hostBaseUrl);
         if (!resultadoEnvio.sucesso) {
           logErro('AUTH_RECOVERY_EMAIL', `Falha no disparo do e-mail de recuperação: ${resultadoEnvio.erro}`);
         }

@@ -76,7 +76,8 @@ function testarUnitariosFormatters() {
     qtdRecusados: 0,
     qtdDescMorada: 1,
     usuario: {
-      nomeCompleto: 'Fabricio Leite'
+      primeiroNome: 'Fabricio',
+      ultimoNome: 'Leite'
     }
   };
 
@@ -115,7 +116,8 @@ async function testarControllerWhatsapp() {
   if (!userOp1) {
     userOp1 = await prisma.usuario.create({
       data: {
-        nomeCompleto: 'Operador Teste F5',
+        primeiroNome: 'Operador',
+        ultimoNome: 'Cinco',
         numeroSc: 'SC9995',
         email: 'op.fase5@cacatividades.pt',
         senhaHash: '$2b$10$w8c5c7d0e1f2g3h4i5j6k7l8m9n0',
@@ -127,7 +129,8 @@ async function testarControllerWhatsapp() {
   if (!userOp2) {
     userOp2 = await prisma.usuario.create({
       data: {
-        nomeCompleto: 'Outro Operador F5',
+        primeiroNome: 'Outro',
+        ultimoNome: 'Operador',
         numeroSc: 'SC9996',
         email: 'op2.fase5@cacatividades.pt',
         senhaHash: '$2b$10$w8c5c7d0e1f2g3h4i5j6k7l8m9n0',
@@ -139,7 +142,8 @@ async function testarControllerWhatsapp() {
   if (!userAdmin) {
     userAdmin = await prisma.usuario.create({
       data: {
-        nomeCompleto: 'Admin Teste F5',
+        primeiroNome: 'Admin',
+        ultimoNome: 'Cinco',
         numeroSc: 'SC9997',
         email: 'admin.fase5@cacatividades.pt',
         senhaHash: '$2b$10$w8c5c7d0e1f2g3h4i5j6k7l8m9n0',

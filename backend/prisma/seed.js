@@ -15,7 +15,8 @@ async function main() {
   const admin = await prisma.usuario.upsert({
     where: { email: 'admin@cacatividades.pt' },
     update: {
-      nomeCompleto: 'Administrador CAC',
+      primeiroNome: 'Administrador',
+      ultimoNome: 'CAC',
       numeroSc: 'SC-0001',
       telemovel: '+351910000000',
       senhaHash: adminSenhaHash,
@@ -23,7 +24,8 @@ async function main() {
       ativo: true
     },
     create: {
-      nomeCompleto: 'Administrador CAC',
+      primeiroNome: 'Administrador',
+      ultimoNome: 'CAC',
       numeroSc: 'SC-0001',
       telemovel: '+351910000000',
       email: 'admin@cacatividades.pt',
@@ -60,7 +62,8 @@ async function main() {
   const operador = await prisma.usuario.upsert({
     where: { email: 'fabricio@cacatividades.pt' },
     update: {
-      nomeCompleto: 'Fabrício Leite',
+      primeiroNome: 'Fabrício',
+      ultimoNome: 'Leite',
       numeroSc: 'SC-2825',
       telemovel: '+351912345678',
       senhaHash: operadorSenhaHash,
@@ -68,7 +71,8 @@ async function main() {
       ativo: true
     },
     create: {
-      nomeCompleto: 'Fabrício Leite',
+      primeiroNome: 'Fabrício',
+      ultimoNome: 'Leite',
       numeroSc: 'SC-2825',
       telemovel: '+351912345678',
       email: 'fabricio@cacatividades.pt',

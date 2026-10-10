@@ -28,7 +28,9 @@ class PerfilController {
         status: 'sucesso',
         dados: {
           id: usuario.id.toString(),
-          nomeCompleto: usuario.nomeCompleto,
+          primeiroNome: usuario.primeiroNome,
+          ultimoNome: usuario.ultimoNome,
+          nomeCompleto: `${usuario.primeiroNome} ${usuario.ultimoNome}`.trim(),
           numeroSc: usuario.numeroSc,
           telemovel: usuario.telemovel,
           email: usuario.email,
@@ -55,6 +57,8 @@ class PerfilController {
     try {
       const usuarioId = BigInt(req.session.usuario.id);
       const {
+        primeiro_nome,
+        ultimo_nome,
         nome_completo,
         telemovel,
         matricula_padrao,
@@ -76,9 +80,47 @@ class PerfilController {
       }
 
       const updateData = {};
+      const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/;
 
-      if (nome_completo && nome_completo.trim()) {
-        updateData.nomeCompleto = nome_completo.trim();
+      if (primeiro_nome !== undefined) {
+        const pNome = primeiro_nome.trim();
+        if (!pNome) {
+          return res.status(400).json({
+            status: 'erro',
+            mensagem: 'O primeiro nome não pode estar vazio.'
+          });
+        }
+        if (/\s/.test(pNome) || !nomeRegex.test(pNome)) {
+          return res.status(400).json({
+            status: 'erro',
+            mensagem: 'O primeiro nome deve conter apenas um único nome (sem espaços ou números).'
+          });
+        }
+        updateData.primeiroNome = pNome;
+      }
+
+      if (ultimo_nome !== undefined) {
+        const uNome = ultimo_nome.trim();
+        if (!uNome) {
+          return res.status(400).json({
+            status: 'erro',
+            mensagem: 'O último nome não pode estar vazio.'
+          });
+        }
+        if (/\s/.test(uNome) || !nomeRegex.test(uNome)) {
+          return res.status(400).json({
+            status: 'erro',
+            mensagem: 'O último nome deve conter apenas um único nome (sem espaços ou números).'
+          });
+        }
+        updateData.ultimoNome = uNome;
+      }
+
+      // Fallback de retrocompatibilidade caso cliente envie nome_completo
+      if (!updateData.primeiroNome && !updateData.ultimoNome && nome_completo && nome_completo.trim()) {
+        const partes = nome_completo.trim().split(/\s+/);
+        updateData.primeiroNome = partes[0] || '';
+        updateData.ultimoNome = partes.slice(1).join(' ') || '';
       }
 
       if (telemovel && telemovel.trim()) {
@@ -146,8 +188,12 @@ class PerfilController {
       });
 
       // Atualizar dados da sessão caso o nome tenha mudado
-      if (updateData.nomeCompleto) {
-        req.session.usuario.nome = updateData.nomeCompleto;
+      if (updateData.primeiroNome || updateData.ultimoNome) {
+        const pNome = updateData.primeiroNome || usuario.primeiroNome;
+        const uNome = updateData.ultimoNome !== undefined ? updateData.ultimoNome : usuario.ultimoNome;
+        req.session.usuario.primeiroNome = pNome;
+        req.session.usuario.ultimoNome = uNome;
+        req.session.usuario.nome = `${pNome} ${uNome}`.trim();
       }
 
       return res.json({

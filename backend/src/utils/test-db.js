@@ -12,7 +12,7 @@ async function testDatabase() {
   if (!operador || !operador.perfilConfiguracao) {
     throw new Error('Falha ao carregar operador com perfil');
   }
-  console.log(`✓ Usuário encontrado: ${operador.nomeCompleto} (Matrícula Padrão: ${operador.perfilConfiguracao.matriculaPadrao})`);
+  console.log(`✓ Usuário encontrado: ${operador.primeiroNome} ${operador.ultimoNome} (Matrícula Padrão: ${operador.perfilConfiguracao.matriculaPadrao})`);
 
   // 2. Testar criação de turno diário (Abertura)
   const hoje = new Date();

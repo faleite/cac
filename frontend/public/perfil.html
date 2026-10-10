@@ -63,9 +63,16 @@
       <div class="card">
         <h3 class="card-title">Dados Pessoais</h3>
 
-        <div class="form-group">
-          <label class="form-label" for="nome_completo">Nome Completo</label>
-          <input class="form-control" type="text" id="nome_completo" name="nome_completo" required>
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="primeiro_nome">Primeiro Nome</label>
+            <input class="form-control" type="text" id="primeiro_nome" name="primeiro_nome" placeholder="Ex: João" required pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$" title="Insira apenas um único nome (sem espaços ou números)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ultimo_nome">Último Nome</label>
+            <input class="form-control" type="text" id="ultimo_nome" name="ultimo_nome" placeholder="Ex: Silva" required pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$" title="Insira apenas um único nome (sem espaços ou números)">
+          </div>
         </div>
 
         <div class="form-group">
@@ -209,12 +216,17 @@
 
       const d = res.data.dados;
 
-      document.getElementById('user-nome').textContent = d.nomeCompleto;
-      document.getElementById('user-avatar').textContent = d.nomeCompleto.charAt(0).toUpperCase();
+      const nomeExibicao = (d.primeiroNome || d.ultimoNome)
+        ? `${d.primeiroNome || ''} ${d.ultimoNome || ''}`.trim()
+        : (d.nomeCompleto || 'Colaborador');
+
+      document.getElementById('user-nome').textContent = nomeExibicao;
+      document.getElementById('user-avatar').textContent = (d.primeiroNome || d.nomeCompleto || 'C').charAt(0).toUpperCase();
       document.getElementById('user-sc-email').textContent = `SC: ${d.numeroSc} • ${d.email}`;
       document.getElementById('user-perfil').textContent = d.perfil === 'administrador' ? 'Administrador' : 'Operador';
 
-      document.getElementById('nome_completo').value = d.nomeCompleto || '';
+      document.getElementById('primeiro_nome').value = d.primeiroNome || '';
+      document.getElementById('ultimo_nome').value = d.ultimoNome || '';
       document.getElementById('telemovel').value = d.telemovel || '';
       document.getElementById('email').value = d.email || '';
       document.getElementById('matricula_padrao').value = d.matriculaPadrao || '';
@@ -312,21 +324,52 @@
       }
     });
 
-    // Salvar Perfil
-    const form = document.getElementById('form-perfil');
-    const btnSalvar = document.getElementById('btn-salvar');
+    // Bloquear inserção de espaços nos campos de primeiro e último nome
+    ['primeiro_nome', 'ultimo_nome'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.code === 'Space') {
+          e.preventDefault();
+        }
+      });
+      el.addEventListener('input', (e) => {
+        if (/\s/.test(e.target.value)) {
+          e.target.value = e.target.value.replace(/\s+/g, '');
+        }
+      });
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       CAC.limparAlerta('alerta-container');
 
-      const nome_completo = document.getElementById('nome_completo').value.trim();
+      const primeiro_nome = document.getElementById('primeiro_nome').value.trim();
+      const ultimo_nome = document.getElementById('ultimo_nome').value.trim();
       const telemovel = document.getElementById('telemovel').value.trim();
       const matricula_padrao = document.getElementById('matricula_padrao').value.trim();
       const giro_padrao = document.getElementById('giro_padrao').value.trim();
       const senha_atual = document.getElementById('senha_atual').value;
       const nova_senha = document.getElementById('nova_senha').value;
       const confirmar_nova_senha = document.getElementById('confirmar_nova_senha').value;
+
+      if (!primeiro_nome || !ultimo_nome) {
+        CAC.mostrarAlerta('alerta-container', 'Primeiro Nome e Último Nome são de preenchimento obrigatório.', 'danger');
+        return;
+      }
+
+      const nomeRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/;
+      if (/\s/.test(primeiro_nome) || !nomeRegex.test(primeiro_nome)) {
+        CAC.mostrarAlerta('alerta-container', 'O Primeiro Nome deve conter apenas um único nome (sem espaços ou números).', 'danger');
+        document.getElementById('primeiro_nome').focus();
+        return;
+      }
+
+      if (/\s/.test(ultimo_nome) || !nomeRegex.test(ultimo_nome)) {
+        CAC.mostrarAlerta('alerta-container', 'O Último Nome deve conter apenas um único nome (sem espaços ou números).', 'danger');
+        document.getElementById('ultimo_nome').focus();
+        return;
+      }
 
       if (nova_senha && nova_senha !== confirmar_nova_senha) {
         CAC.mostrarAlerta('alerta-container', 'A confirmação da nova palavra-passe não coincide.', 'danger');
@@ -339,7 +382,8 @@
       const res = await CAC.api('/perfil', {
         method: 'PUT',
         body: {
-          nome_completo,
+          primeiro_nome,
+          ultimo_nome,
           telemovel,
           matricula_padrao,
           giro_padrao,
@@ -357,6 +401,11 @@
         document.getElementById('senha_atual').value = '';
         document.getElementById('nova_senha').value = '';
         document.getElementById('confirmar_nova_senha').value = '';
+
+        // Atualizar avatar e cabeçalho dinamicamente
+        const nomeAtualizado = `${primeiro_nome} ${ultimo_nome}`.trim();
+        document.getElementById('user-nome').textContent = nomeAtualizado;
+        document.getElementById('user-avatar').textContent = primeiro_nome.charAt(0).toUpperCase();
 
         // Limpar rascunho de abertura para que novas preferências sejam sincronizadas imediatamente
         if (window.CACDraftStorage) {

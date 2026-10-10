@@ -13,7 +13,8 @@ generator client {
 // =============================================================================
 model Usuario {
   id               BigInt    @id @default(autoincrement())
-  nomeCompleto     String    @map("nome_completo") @db.VarChar(150)
+  primeiroNome     String    @map("primeiro_nome") @db.VarChar(100)
+  ultimoNome       String    @map("ultimo_nome") @db.VarChar(100)
   numeroSc         String    @unique @map("numero_sc") @db.VarChar(30)
   telemovel        String    @db.VarChar(20)
   email            String    @unique @db.VarChar(150)

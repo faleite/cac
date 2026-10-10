@@ -313,7 +313,8 @@ Os seguintes recursos **NÃO** fazem parte da primeira versão (V1):
 -- Habilitação da extensão para UUIDs (se necessário) ou uso de BIGSERIAL
 CREATE TABLE usuarios (
     id BIGSERIAL PRIMARY KEY,
-    nome_completo VARCHAR(150) NOT NULL,
+    primeiro_nome VARCHAR(100) NOT NULL,
+    ultimo_nome VARCHAR(100) NOT NULL,
     numero_sc VARCHAR(30) UNIQUE NOT NULL,
     telemovel VARCHAR(20) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,

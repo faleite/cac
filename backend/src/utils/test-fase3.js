@@ -63,8 +63,39 @@ async function runTests() {
 
     // 1. Teste de Auto-Registo de Colaborador
     console.log('\n--- 1. Teste de Auto-Registo ---');
+
+    // 1.1 Validação de rejeição de múltiplos nomes em primeiro_nome e ultimo_nome
+    const reqMultiploPrimeiro = mockReq({
+      primeiro_nome: 'João Pedro',
+      ultimo_nome: 'Silva',
+      numero_sc: 'SC_TMP1',
+      telemovel: '912345678',
+      email: 'tmp1@cac.pt',
+      senha: testSenha,
+      confirmar_senha: testSenha,
+      aceitou_termos: true
+    });
+    const resMultiploPrimeiro = mockRes();
+    await authController.registo(reqMultiploPrimeiro, resMultiploPrimeiro);
+    assert(resMultiploPrimeiro.statusCode === 400, 'Registo deve rejeitar primeiro_nome com mais de uma palavra (HTTP 400)');
+
+    const reqMultiploUltimo = mockReq({
+      primeiro_nome: 'João',
+      ultimo_nome: 'Silva Costa',
+      numero_sc: 'SC_TMP2',
+      telemovel: '912345678',
+      email: 'tmp2@cac.pt',
+      senha: testSenha,
+      confirmar_senha: testSenha,
+      aceitou_termos: true
+    });
+    const resMultiploUltimo = mockRes();
+    await authController.registo(reqMultiploUltimo, resMultiploUltimo);
+    assert(resMultiploUltimo.statusCode === 400, 'Registo deve rejeitar ultimo_nome com mais de uma palavra (HTTP 400)');
+
     const regReq = mockReq({
-      nome_completo: 'Operador Teste Fase 3',
+      primeiro_nome: 'Operador',
+      ultimo_nome: 'Tres',
       numero_sc: testSC,
       telemovel: '912345678',
       email: testEmail,
@@ -126,8 +157,19 @@ async function runTests() {
 
     // 6. Teste de Atualização de Perfil e Preferências
     console.log('\n--- 6. Teste de Atualização de Perfil & Preferências ---');
+
+    // 6.1 Rejeição de múltiplos nomes na edição de perfil
+    const perfInvalidoReq = mockReq({
+      primeiro_nome: 'Operador Teste',
+      ultimo_nome: 'Modificado'
+    }, { usuario: { id: userCriado.id.toString(), perfil: 'operador' } });
+    const perfInvalidoRes = mockRes();
+    await perfilController.atualizarPerfil(perfInvalidoReq, perfInvalidoRes);
+    assert(perfInvalidoRes.statusCode === 400, 'Atualização de perfil deve rejeitar primeiro_nome com mais de uma palavra (HTTP 400)');
+
     const perfReq = mockReq({
-      nome_completo: 'Operador Teste Modificado',
+      primeiro_nome: 'Operador',
+      ultimo_nome: 'Modificado',
       telemovel: '987654321',
       matricula_padrao: 'AA-00-BB',
       giro_padrao: '3000H'

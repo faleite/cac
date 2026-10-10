@@ -47,9 +47,16 @@ function gerarMensagemWhatsapp(registo) {
   if (!registo) return '';
 
   const dataFormatada = formatarDataPostal(registo.dataRegisto);
-  const nomeCompleto = (registo.usuario && registo.usuario.nomeCompleto) 
-    ? registo.usuario.nomeCompleto.trim() 
-    : (registo.nomeUsuario || '');
+  let nomeCompleto = '';
+  if (registo.usuario) {
+    if (registo.usuario.primeiroNome || registo.usuario.ultimoNome) {
+      nomeCompleto = `${registo.usuario.primeiroNome || ''} ${registo.usuario.ultimoNome || ''}`.trim();
+    } else if (registo.usuario.nomeCompleto) {
+      nomeCompleto = registo.usuario.nomeCompleto.trim();
+    }
+  } else if (registo.nomeUsuario) {
+    nomeCompleto = registo.nomeUsuario.trim();
+  }
 
   const matricula = registo.matriculaDia || '';
   const kmInicial = registo.kmInicial !== undefined ? registo.kmInicial : '';

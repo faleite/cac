@@ -138,7 +138,8 @@ async function runTests() {
     if (!userOp) {
       userOp = await prisma.usuario.create({
         data: {
-          nomeCompleto: 'Operador Teste Fase 4',
+          primeiroNome: 'Operador',
+          ultimoNome: 'Quatro',
           numeroSc: scOperador,
           telemovel: '+351912999444',
           email: emailOperador,
@@ -158,7 +159,9 @@ async function runTests() {
     const sessionOperador = {
       id: userOp.id.toString(),
       numeroSc: userOp.numeroSc,
-      nomeCompleto: userOp.nomeCompleto,
+      primeiroNome: userOp.primeiroNome,
+      ultimoNome: userOp.ultimoNome,
+      nome: `${userOp.primeiroNome} ${userOp.ultimoNome}`.trim(),
       email: userOp.email,
       perfil: 'operador'
     };
@@ -320,7 +323,9 @@ async function runTests() {
     const sessionOutroOp = {
       id: '99999999',
       numeroSc: 'SC0000',
-      nomeCompleto: 'Outro Operador',
+      primeiroNome: 'Outro',
+      ultimoNome: 'Operador',
+      nome: 'Outro Operador',
       email: 'outro@cac.pt',
       perfil: 'operador'
     };

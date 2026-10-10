@@ -52,6 +52,9 @@ function formatarRegisto(item) {
     usuario: item.usuario ? {
       ...item.usuario,
       id: item.usuario.id ? item.usuario.id.toString() : undefined,
+      nomeCompleto: item.usuario.primeiroNome || item.usuario.ultimoNome
+        ? `${item.usuario.primeiroNome || ''} ${item.usuario.ultimoNome || ''}`.trim()
+        : (item.usuario.nomeCompleto || ''),
       senhaHash: undefined
     } : undefined,
     auditorias: Array.isArray(item.auditorias) ? item.auditorias.map(a => ({
@@ -61,7 +64,11 @@ function formatarRegisto(item) {
       usuarioAlteracaoId: a.usuarioAlteracaoId ? a.usuarioAlteracaoId.toString() : undefined,
       usuarioAlteracao: a.usuarioAlteracao ? {
         id: a.usuarioAlteracao.id ? a.usuarioAlteracao.id.toString() : undefined,
-        nomeCompleto: a.usuarioAlteracao.nomeCompleto,
+        nomeCompleto: a.usuarioAlteracao.primeiroNome || a.usuarioAlteracao.ultimoNome
+          ? `${a.usuarioAlteracao.primeiroNome || ''} ${a.usuarioAlteracao.ultimoNome || ''}`.trim()
+          : (a.usuarioAlteracao.nomeCompleto || ''),
+        primeiroNome: a.usuarioAlteracao.primeiroNome,
+        ultimoNome: a.usuarioAlteracao.ultimoNome,
         numeroSc: a.usuarioAlteracao.numeroSc
       } : undefined
     })) : undefined
@@ -403,7 +410,8 @@ class RegistoDiarioController {
             usuario: {
               select: {
                 id: true,
-                nomeCompleto: true,
+                primeiroNome: true,
+                ultimoNome: true,
                 numeroSc: true,
                 email: true
               }
@@ -446,7 +454,8 @@ class RegistoDiarioController {
           usuario: {
             select: {
               id: true,
-              nomeCompleto: true,
+              primeiroNome: true,
+              ultimoNome: true,
               numeroSc: true,
               email: true,
               telemovel: true
@@ -458,7 +467,8 @@ class RegistoDiarioController {
               usuarioAlteracao: {
                 select: {
                   id: true,
-                  nomeCompleto: true,
+                  primeiroNome: true,
+                  ultimoNome: true,
                   numeroSc: true
                 }
               }
@@ -729,7 +739,8 @@ class RegistoDiarioController {
           usuario: {
             select: {
               id: true,
-              nomeCompleto: true,
+              primeiroNome: true,
+              ultimoNome: true,
               numeroSc: true,
               telemovel: true
             }

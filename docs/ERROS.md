@@ -20,6 +20,7 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-010** | 2026-09-30 | Backend / Autenticação & Brevo SMTP | E-mail de recuperação não recebido: desincronização de .env no container e falha de autenticação SMTP 535. | Container Docker não possuía montagem de `/app/.env` (mantendo variáveis antigas vazias) e `SMTP_USER` preenchido com e-mail pessoal em vez do Login técnico do Brevo. | Montagem de `./.env:/app/.env` e `./logs:/app/logs` no `docker-compose.yml`, reload com `override: true`, `nodemon.json`, detecção e logging de erros 535/550 no `mailer.js` e persistência em `logs/app-error.log`. | **Resolvido** |
 | **ERR-011** | 2026-10-04 | Segurança / Backend & Frontend | Exposição de detalhes de erro em `/api/health`, ausência de security headers HTTP, ausência de error handler global no Express e sanitização XSS no frontend. | Detalhes de exceção bruta do Prisma/PostgreSQL eram retornados no JSON da rota `/health`; ausência de middleware para headers de proteção HTTP e sanitização client-side incompleta. | Ocultação de detalhes internos em `/health` com registro em `logs/app-error.log`, headers de segurança HTTP (`nosniff`, `SAMEORIGIN`, `nosniff`), error handler global 500/404, sanitização XSS via `CAC.escapeHtml` e auditoria de segurança em `logs/security.log`. | **Resolvido** |
 | **ERR-012** | 2026-10-04 | Frontend / Histórico e Modal | Botão "Editar com Auditoria" inoperante em `registos.html`. | Comparação estrita de tipo (`r.id === id`), `z-index` baixo na modal (`100`) e ausência de delegação de eventos para elementos criados dinamicamente no DOM. | Atualizado `z-index` para `1000`, normalização de ID para string (`String(r.id).trim() === idBusca`), exportação explícita de `abrirModalEdicao`/`fecharModalEdicao` no `window`, adição de `data-action="editar"` com event delegation e suporte a tecla `Escape`. | **Resolvido** |
+| **ERR-013** | 2026-10-10 | Backend & Frontend / Validação de Nomes | Campos "Primeiro Nome" e "Último Nome" aceitavam múltiplos nomes/palavras com espaços. | Ausência de restrição de palavra única e rejeição de caracteres de espaçamento nos controladores e inputs. | Adicionada validação estrita com regex `^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$` e bloqueio de espaços no backend (`AuthController.js` e `PerfilController.js`) com HTTP 400; no frontend (`registo.html` e `perfil.html`) bloqueio da tecla espaço, sanitização em evento `input`, atributo `pattern` e validação com feedback visual no `submit`. | **Resolvido** |
 
 ---
 
@@ -117,6 +118,19 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   3. Em `frontend/nginx.conf`, adicionados os headers `Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0`, `Pragma: no-cache` e `Expires: 0`, e configurada a montagem do volume no `docker-compose.yml`.
   4. A função `abrirModalEdicao(id, event)` foi transformada em assíncrona, com busca resiliente por string, fallback automático de consulta à API (`GET /api/registos/:id`) caso o item não esteja no estado local, e preenchimento seguro de todos os campos via `preencherCampo`.
   5. As funções `abrirModalEdicao` e `fecharModalEdicao` foram exportadas no escopo `window`.
+
+### Caso ERR-013: Aceitação de Múltiplos Nomes nos Campos Primeiro e Último Nome
+- **Contexto:** Após a separação da coluna `nome_completo` nos campos `primeiro_nome` e `ultimo_nome`, os formulários de registo e perfil permitiam a inserção de múltiplos nomes com espaços em cada um dos campos (ex: "João Pedro" no primeiro nome e "Silva Santos" no último nome).
+- **Impacto:** Distorção da padronização dos dados de identificação do colaborador, contrariando o requisito de conter estritamente um único nome em cada campo.
+- **Causa-Raiz:**
+  1. *Backend:* `AuthController.js` e `PerfilController.js` validavam apenas se a string não estava vazia via `.trim()`, sem validar a ausência de espaços (`/\s/`) ou a presença de apenas uma palavra.
+  2. *Frontend:* Os inputs em `registo.html` e `perfil.html` não possuíam restrição de padrão HTML5 (`pattern`), nem tratamento nos eventos de teclado para bloquear a barra de espaço ou limpar espaços colados, permitindo que o usuário digitasse termos compostos.
+- **Resolução:**
+  1. No backend, em `AuthController.js` (`registo`) e `PerfilController.js` (`atualizarPerfil`), implementada validação com rejeição imediata via HTTP 400 caso o valor contenha qualquer espaço em branco (`/\s/.test(val)`) ou não atenda à expressão regular de nome válido `^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$`.
+  2. No frontend, em `registo.html` e `perfil.html`, adicionado o atributo `pattern="^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$"` e `title="Insira apenas um único nome (sem espaços ou números)"` nos inputs.
+  3. Adicionados listeners de `keydown` interceptando e prevenindo a tecla espaço (`Space`), e de `input` removendo automaticamente espaços que venham via cópia/colagem.
+  4. Adicionada validação explícita no evento de `submit` antes do envio, com foco automático no campo irregular e alerta visual de erro.
+  5. Atualizados e adicionados testes automatizados em `backend/src/utils/test-fase3.js` validando que tentativas de registo e edição de perfil com múltiplos termos retornam HTTP 400.
 
 ---
 
