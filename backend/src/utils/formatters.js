@@ -63,38 +63,83 @@ function gerarMensagemWhatsapp(registo) {
   const kmFinal = registo.kmFinal !== undefined && registo.kmFinal !== null ? registo.kmFinal : '';
   const giro = registo.giroDia || '';
   const qtdObjetos = registo.qtdObjetos !== undefined ? registo.qtdObjetos : 0;
-  const qtdRecolhas = registo.qtdRecolhas !== undefined ? registo.qtdRecolhas : 0;
+  const qtdRecolhas = registo.qtdRecolhas !== undefined ? parseInt(registo.qtdRecolhas, 10) : 0;
 
-  const avisados = formatarIncidenciaValor(registo.qtdAvisados);
-  const retornos = formatarIncidenciaValor(registo.qtdRetornos);
-  const endInsuf = formatarIncidenciaValor(registo.qtdEndInsuficiente);
-  const recusados = formatarIncidenciaValor(registo.qtdRecusados);
-  const descMorada = formatarIncidenciaValor(registo.qtdDescMorada);
+  const qtdAvisados = parseInt(registo.qtdAvisados || 0, 10);
+  const qtdRetornos = parseInt(registo.qtdRetornos || 0, 10);
+  const qtdEndInsuficiente = parseInt(registo.qtdEndInsuficiente || 0, 10);
+  const qtdRecusados = parseInt(registo.qtdRecusados || 0, 10);
+  const qtdDescMorada = parseInt(registo.qtdDescMorada || 0, 10);
 
-  const linhas = [
-    `*Controlo Diário*`,
-    `*_${dataFormatada}_*`,
-    ``,
+  // Kms percorridos (usa campo existente ou calcula diferença)
+  let kmPercorridos = registo.kmPercorridos;
+  if (kmPercorridos === undefined || kmPercorridos === null) {
+    if (kmFinal !== '' && kmInicial !== '') {
+      kmPercorridos = Math.max(0, parseInt(kmFinal, 10) - parseInt(kmInicial, 10));
+    } else {
+      kmPercorridos = 0;
+    }
+  }
+
+  // Quantidade de objetos entregues (usa campo existente ou calcula abatendo incidências)
+  let qtdEntregues = registo.qtdEntregues;
+  if (qtdEntregues === undefined || qtdEntregues === null) {
+    const somaInc = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
+    qtdEntregues = Math.max(0, parseInt(qtdObjetos, 10) - somaInc);
+  } else {
+    qtdEntregues = parseInt(qtdEntregues, 10);
+  }
+
+  // Seção Início
+  const linhasInicio = [
     `*Início*`,
     `Nome: *${nomeCompleto}*`,
     `Matrícula: *${matricula}*`,
     `Km iniciais: *${kmInicial}*`,
     `Giro: *${giro}*`,
-    `Qtd Objectos: *${qtdObjetos}*`,
-    `Qtd Recolhas: *${qtdRecolhas}*`,
-    ``,
+    `Qtd Objetos: *${qtdObjetos}*`
+  ];
+  if (qtdRecolhas > 0) {
+    linhasInicio.push(`Qtd Pontos Recolhas: *${qtdRecolhas}*`);
+  }
+
+  // Seção Final
+  const linhasFinal = [
     `*Final*`,
     `Nome: *${nomeCompleto}*`,
     `Matrícula: *${matricula}*`,
     `Km Finais: *${kmFinal}*`,
     `Giro: *${giro}*`,
-    `Qtd Objectos: *${qtdObjetos}*`,
-    `Qtd Recolhas: *${qtdRecolhas}*`,
-    `Qtd Avisados: ${avisados}`,
-    `Qtd Retornos: ${retornos}`,
-    `Qtd End. Insuf.: ${endInsuf}`,
-    `Qtd Recusados: ${recusados}`,
-    `Qtd desc morada.: ${descMorada}`
+    `Qtd Kms Percorridos: *${kmPercorridos}*`,
+    `Qtd Objetos: *${qtdObjetos}*`
+  ];
+  if (qtdRecolhas > 0) {
+    linhasFinal.push(`Qtd Pontos Recolhas: *${qtdRecolhas}*`);
+  }
+  if (qtdAvisados > 0) {
+    linhasFinal.push(`Qtd Avisados: *${qtdAvisados}*`);
+  }
+  if (qtdRetornos > 0) {
+    linhasFinal.push(`Qtd Retornos ao Centro: *${qtdRetornos}*`);
+  }
+  if (qtdEndInsuficiente > 0) {
+    linhasFinal.push(`Qtd Endereço Insuf.: *${qtdEndInsuficiente}*`);
+  }
+  if (qtdRecusados > 0) {
+    linhasFinal.push(`Qtd Recusados: *${qtdRecusados}*`);
+  }
+  if (qtdDescMorada > 0) {
+    linhasFinal.push(`Qtd Desc. Morada: *${qtdDescMorada}*`);
+  }
+  linhasFinal.push(`_Qtd Objetos Entregues:_ *${qtdEntregues}*`);
+
+  const linhas = [
+    `*Controlo Diário*`,
+    `*_${dataFormatada}_*`,
+    ``,
+    ...linhasInicio,
+    ``,
+    ...linhasFinal
   ];
 
   return linhas.join('\n');

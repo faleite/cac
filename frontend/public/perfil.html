@@ -222,7 +222,7 @@
 
       document.getElementById('user-nome').textContent = nomeExibicao;
       document.getElementById('user-avatar').textContent = (d.primeiroNome || d.nomeCompleto || 'C').charAt(0).toUpperCase();
-      document.getElementById('user-sc-email').textContent = `SC: ${d.numeroSc} • ${d.email}`;
+      document.getElementById('user-sc-email').textContent = `${d.numeroSc} • ${d.email}`;
       document.getElementById('user-perfil').textContent = d.perfil === 'administrador' ? 'Administrador' : 'Operador';
 
       document.getElementById('primeiro_nome').value = d.primeiroNome || '';

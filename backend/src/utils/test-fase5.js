@@ -61,7 +61,7 @@ function testarUnitariosFormatters() {
   assert.strictEqual(formatarIncidenciaValor(undefined), '*0*');
   console.log('  ✅ [PASSOU] Formatação de Valores de Incidência validada (*N* vs *0*)');
 
-  // Estrutura Completa do Modelo Oficial
+  // Cenário 1: Estrutura Completa do Modelo Oficial com Incidências Mistas
   const mockRegisto = {
     dataRegisto: new Date('2026-08-10T00:00:00.000Z'),
     matriculaDia: 'BI-04-NH',
@@ -91,15 +91,76 @@ function testarUnitariosFormatters() {
   assert(msg.includes('Matrícula: *BI-04-NH*'), 'Deve conter Matrícula');
   assert(msg.includes('Km iniciais: *73136*'), 'Deve conter Km iniciais');
   assert(msg.includes('Km Finais: *73207*'), 'Deve conter Km Finais');
-  assert(msg.includes('Qtd Objectos: *159*'), 'Deve conter Qtd Objectos');
+  assert(msg.includes('Qtd Objetos: *159*'), 'Deve conter Qtd Objetos');
+  assert(msg.includes('Qtd Pontos Recolhas: *1*'), 'Deve conter Qtd Pontos Recolhas');
+  assert(msg.includes('Qtd Kms Percorridos: *71*'), 'Deve conter Qtd Kms Percorridos calculado (73207 - 73136)');
   assert(msg.includes('Qtd Avisados: *1*'), 'Qtd Avisados deve ser *1*');
-  assert(msg.includes('Qtd Retornos: *3*'), 'Qtd Retornos deve ser *3*');
-  assert(msg.includes('Qtd End. Insuf.: *0*'), 'Qtd End. Insuf. zero deve ser *0*');
-  assert(msg.includes('Qtd Recusados: *0*'), 'Qtd Recusados zero deve ser *0*');
-  assert(msg.includes('Qtd desc morada.: *1*'), 'Qtd desc morada deve ser *1*');
+  assert(msg.includes('Qtd Retornos ao Centro: *3*'), 'Qtd Retornos ao Centro deve ser *3*');
+  assert(!msg.includes('Qtd Endereço Insuf.'), 'Qtd Endereço Insuf. zerado deve ser omitido');
+  assert(!msg.includes('Qtd Recusados'), 'Qtd Recusados zerado deve ser omitido');
+  assert(msg.includes('Qtd Desc. Morada: *1*'), 'Qtd Desc. Morada deve ser *1*');
+  assert(msg.includes('_Qtd Objetos Entregues:_ *154*'), 'Deve conter Qtd Objetos Entregues');
 
+  // Cenário 2: Exemplo Oficial de Fecho (Campos zerados omitidos e Recolhas = 1)
+  const mockExemplo = {
+    dataRegisto: new Date('2026-10-04T00:00:00.000Z'),
+    matriculaDia: 'BG91EA',
+    kmInicial: 12,
+    kmFinal: 127,
+    giroDia: '2820G',
+    qtdObjetos: 112,
+    qtdRecolhas: 1,
+    qtdAvisados: 1,
+    qtdRetornos: 0,
+    qtdEndInsuficiente: 0,
+    qtdRecusados: 0,
+    qtdDescMorada: 0,
+    kmPercorridos: 115,
+    qtdEntregues: 111,
+    usuario: {
+      primeiroNome: 'Fabricio',
+      ultimoNome: 'Leite'
+    }
+  };
 
-  console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial AIRAC');
+  const msgExemplo = gerarMensagemWhatsapp(mockExemplo);
+  const esperadoExemplo = [
+    '*Controlo Diário*',
+    '*_04/10/2026_*',
+    '',
+    '*Início*',
+    'Nome: *Fabricio Leite*',
+    'Matrícula: *BG91EA*',
+    'Km iniciais: *12*',
+    'Giro: *2820G*',
+    'Qtd Objetos: *112*',
+    'Qtd Pontos Recolhas: *1*',
+    '',
+    '*Final*',
+    'Nome: *Fabricio Leite*',
+    'Matrícula: *BG91EA*',
+    'Km Finais: *127*',
+    'Giro: *2820G*',
+    'Qtd Kms Percorridos: *115*',
+    'Qtd Objetos: *112*',
+    'Qtd Pontos Recolhas: *1*',
+    'Qtd Avisados: *1*',
+    '_Qtd Objetos Entregues:_ *111*'
+  ].join('\n');
+
+  assert.strictEqual(msgExemplo, esperadoExemplo, 'Mensagem deve ser idêntica ao exemplo oficial');
+  console.log('  ✅ [PASSOU] Exemplo oficial da mensagem validado com precisão estrita');
+
+  // Cenário 3: Recolhas = 0 (Deve ser omitida tanto no Início quanto no Final)
+  const mockSemRecolhas = {
+    ...mockExemplo,
+    qtdRecolhas: 0
+  };
+  const msgSemRecolhas = gerarMensagemWhatsapp(mockSemRecolhas);
+  assert(!msgSemRecolhas.includes('Qtd Pontos Recolhas'), 'Recolhas zeradas não devem constar nem no Início nem no Final');
+  console.log('  ✅ [PASSOU] Omissão de Qtd Pontos Recolhas quando igual a 0 validada com sucesso');
+
+  console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial e regras de negócio');
 }
 
 /**
