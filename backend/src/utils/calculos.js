@@ -6,7 +6,9 @@
 /**
  * Calcula o total de incidências (não entregues)
  * @param {Object} incidencias
- * @param {number} incidencias.qtdAvisados
+ * @param {number} [incidencias.qtdAvisadosLoja]
+ * @param {number} [incidencias.qtdAvisadosCacifo]
+ * @param {number} [incidencias.qtdAvisados] Retrocompatibilidade
  * @param {number} incidencias.qtdRetornos
  * @param {number} incidencias.qtdEndInsuficiente
  * @param {number} incidencias.qtdRecusados
@@ -14,7 +16,14 @@
  * @returns {number} Soma total das incidências
  */
 function somarIncidencias(incidencias = {}) {
-  const avisados = Math.max(0, parseInt(incidencias.qtdAvisados || 0, 10));
+  let avisados = 0;
+  if (incidencias.qtdAvisadosLoja !== undefined || incidencias.qtdAvisadosCacifo !== undefined) {
+    avisados = Math.max(0, parseInt(incidencias.qtdAvisadosLoja || 0, 10)) + 
+               Math.max(0, parseInt(incidencias.qtdAvisadosCacifo || 0, 10));
+  } else if (incidencias.qtdAvisados !== undefined) {
+    avisados = Math.max(0, parseInt(incidencias.qtdAvisados || 0, 10));
+  }
+
   const retornos = Math.max(0, parseInt(incidencias.qtdRetornos || 0, 10));
   const endInsuf = Math.max(0, parseInt(incidencias.qtdEndInsuficiente || 0, 10));
   const recusados = Math.max(0, parseInt(incidencias.qtdRecusados || 0, 10));
@@ -117,6 +126,25 @@ function validarDadosFecho(dados = {}) {
 
   if (isNaN(qtdRecolhas) || qtdRecolhas < 0) {
     erros.push('A Quantidade de Recolhas deve ser um número inteiro maior ou igual a zero.');
+  }
+
+  const camposIncidencias = [
+    { nome: 'Avisados Loja', val: dados.qtdAvisadosLoja },
+    { nome: 'Avisados Cacifo', val: dados.qtdAvisadosCacifo },
+    { nome: 'Avisados', val: dados.qtdAvisados },
+    { nome: 'Retornos', val: dados.qtdRetornos },
+    { nome: 'Endereço Insuficiente', val: dados.qtdEndInsuficiente },
+    { nome: 'Recusados', val: dados.qtdRecusados },
+    { nome: 'Desconhecido na Morada', val: dados.qtdDescMorada }
+  ];
+
+  for (const c of camposIncidencias) {
+    if (c.val !== undefined && c.val !== null && c.val !== '') {
+      const num = parseInt(c.val, 10);
+      if (isNaN(num) || num < 0) {
+        erros.push(`A Quantidade de ${c.nome} deve ser um número inteiro maior ou igual a zero.`);
+      }
+    }
   }
 
   const somaInc = somarIncidencias(dados);

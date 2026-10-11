@@ -227,6 +227,8 @@ class RegistoDiarioController {
         qtdObjetos,
         qtdRecolhas,
         qtdAvisados,
+        qtdAvisadosLoja,
+        qtdAvisadosCacifo,
         qtdRetornos,
         qtdEndInsuficiente,
         qtdRecusados,
@@ -294,6 +296,8 @@ class RegistoDiarioController {
         qtdObjetos,
         qtdRecolhas,
         qtdAvisados,
+        qtdAvisadosLoja,
+        qtdAvisadosCacifo,
         qtdRetornos,
         qtdEndInsuficiente,
         qtdRecusados,
@@ -312,14 +316,16 @@ class RegistoDiarioController {
       const finalKm = parseInt(kmFinal, 10);
       const totalObjetos = parseInt(qtdObjetos, 10);
       const totalRecolhas = parseInt(qtdRecolhas || 0, 10);
-      const avisados = Math.max(0, parseInt(qtdAvisados || 0, 10));
+      const avisadosLoja = Math.max(0, parseInt(qtdAvisadosLoja !== undefined ? qtdAvisadosLoja : (qtdAvisados || 0), 10));
+      const avisadosCacifo = Math.max(0, parseInt(qtdAvisadosCacifo || 0, 10));
       const retornos = Math.max(0, parseInt(qtdRetornos || 0, 10));
       const endInsuf = Math.max(0, parseInt(qtdEndInsuficiente || 0, 10));
       const recusados = Math.max(0, parseInt(qtdRecusados || 0, 10));
       const descMorada = Math.max(0, parseInt(qtdDescMorada || 0, 10));
 
       const somaInc = somarIncidencias({
-        qtdAvisados: avisados,
+        qtdAvisadosLoja: avisadosLoja,
+        qtdAvisadosCacifo: avisadosCacifo,
         qtdRetornos: retornos,
         qtdEndInsuficiente: endInsuf,
         qtdRecusados: recusados,
@@ -338,7 +344,8 @@ class RegistoDiarioController {
           kmFinal: finalKm,
           qtdObjetos: totalObjetos,
           qtdRecolhas: totalRecolhas,
-          qtdAvisados: avisados,
+          qtdAvisadosLoja: avisadosLoja,
+          qtdAvisadosCacifo: avisadosCacifo,
           qtdRetornos: retornos,
           qtdEndInsuficiente: endInsuf,
           qtdRecusados: recusados,
@@ -528,6 +535,8 @@ class RegistoDiarioController {
         qtdObjetos,
         qtdRecolhas,
         qtdAvisados,
+        qtdAvisadosLoja,
+        qtdAvisadosCacifo,
         qtdRetornos,
         qtdEndInsuficiente,
         qtdRecusados,
@@ -578,7 +587,12 @@ class RegistoDiarioController {
 
       const novoQtdObjetos = qtdObjetos !== undefined ? parseInt(qtdObjetos, 10) : registoExistente.qtdObjetos;
       const novoQtdRecolhas = qtdRecolhas !== undefined ? parseInt(qtdRecolhas, 10) : registoExistente.qtdRecolhas;
-      const novoAvisados = qtdAvisados !== undefined ? parseInt(qtdAvisados, 10) : registoExistente.qtdAvisados;
+      const novoAvisadosLoja = qtdAvisadosLoja !== undefined 
+        ? parseInt(qtdAvisadosLoja, 10) 
+        : (qtdAvisados !== undefined ? parseInt(qtdAvisados, 10) : (registoExistente.qtdAvisadosLoja ?? 0));
+      const novoAvisadosCacifo = qtdAvisadosCacifo !== undefined 
+        ? parseInt(qtdAvisadosCacifo, 10) 
+        : (registoExistente.qtdAvisadosCacifo ?? 0);
       const novoRetornos = qtdRetornos !== undefined ? parseInt(qtdRetornos, 10) : registoExistente.qtdRetornos;
       const novoEndInsuf = qtdEndInsuficiente !== undefined ? parseInt(qtdEndInsuficiente, 10) : registoExistente.qtdEndInsuficiente;
       const novoRecusados = qtdRecusados !== undefined ? parseInt(qtdRecusados, 10) : registoExistente.qtdRecusados;
@@ -595,7 +609,8 @@ class RegistoDiarioController {
           kmFinal: novoKmFinal,
           qtdObjetos: novoQtdObjetos,
           qtdRecolhas: novoQtdRecolhas,
-          qtdAvisados: novoAvisados,
+          qtdAvisadosLoja: novoAvisadosLoja,
+          qtdAvisadosCacifo: novoAvisadosCacifo,
           qtdRetornos: novoRetornos,
           qtdEndInsuficiente: novoEndInsuf,
           qtdRecusados: novoRecusados,
@@ -611,7 +626,8 @@ class RegistoDiarioController {
         }
 
         const somaInc = somarIncidencias({
-          qtdAvisados: novoAvisados,
+          qtdAvisadosLoja: novoAvisadosLoja,
+          qtdAvisadosCacifo: novoAvisadosCacifo,
           qtdRetornos: novoRetornos,
           qtdEndInsuficiente: novoEndInsuf,
           qtdRecusados: novoRecusados,
@@ -632,7 +648,8 @@ class RegistoDiarioController {
         status: registoExistente.status,
         qtdObjetos: registoExistente.qtdObjetos,
         qtdRecolhas: registoExistente.qtdRecolhas,
-        qtdAvisados: registoExistente.qtdAvisados,
+        qtdAvisadosLoja: registoExistente.qtdAvisadosLoja ?? 0,
+        qtdAvisadosCacifo: registoExistente.qtdAvisadosCacifo ?? 0,
         qtdRetornos: registoExistente.qtdRetornos,
         qtdEndInsuficiente: registoExistente.qtdEndInsuficiente,
         qtdRecusados: registoExistente.qtdRecusados,
@@ -650,7 +667,8 @@ class RegistoDiarioController {
         status: novoStatus,
         qtdObjetos: novoQtdObjetos,
         qtdRecolhas: novoQtdRecolhas,
-        qtdAvisados: novoAvisados,
+        qtdAvisadosLoja: novoAvisadosLoja,
+        qtdAvisadosCacifo: novoAvisadosCacifo,
         qtdRetornos: novoRetornos,
         qtdEndInsuficiente: novoEndInsuf,
         qtdRecusados: novoRecusados,
@@ -673,7 +691,8 @@ class RegistoDiarioController {
             status: novoStatus,
             qtdObjetos: novoQtdObjetos,
             qtdRecolhas: novoQtdRecolhas,
-            qtdAvisados: novoAvisados,
+            qtdAvisadosLoja: novoAvisadosLoja,
+            qtdAvisadosCacifo: novoAvisadosCacifo,
             qtdRetornos: novoRetornos,
             qtdEndInsuficiente: novoEndInsuf,
             qtdRecusados: novoRecusados,

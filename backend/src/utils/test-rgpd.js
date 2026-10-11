@@ -175,7 +175,8 @@ async function executarTestesRGPD() {
       giroDia: '1234G',
       qtdObjetos: 80,
       qtdEntregues: 75,
-      qtdAvisados: 5,
+      qtdAvisadosLoja: 5,
+      qtdAvisadosCacifo: 0,
       kmPercorridos: 50
     }
   });

@@ -69,13 +69,14 @@ async function runTests() {
 
     // Teste 1.1: Somar Incidências
     const somaInc = somarIncidencias({
-      qtdAvisados: 2,
+      qtdAvisadosLoja: 1,
+      qtdAvisadosCacifo: 1,
       qtdRetornos: 3,
       qtdEndInsuficiente: 1,
       qtdRecusados: 0,
       qtdDescMorada: 4
     });
-    assert(somaInc === 10, 'somarIncidencias deve somar as 5 incidências corretamente (2+3+1+0+4 = 10)', `Obteve: ${somaInc}`);
+    assert(somaInc === 10, 'somarIncidencias deve somar as incidências corretamente com loja e cacifo (1+1+3+1+0+4 = 10)', `Obteve: ${somaInc}`);
 
     // Teste 1.2: Calcular Entregues
     const entregues = calcularEntregues(150, somaInc);
@@ -265,7 +266,8 @@ async function runTests() {
       kmFinal: 50190,
       qtdObjetos: 159,
       qtdRecolhas: 1,
-      qtdAvisados: 1,
+      qtdAvisadosLoja: 1,
+      qtdAvisadosCacifo: 0,
       qtdRetornos: 3,
       qtdEndInsuficiente: 0,
       qtdRecusados: 0,

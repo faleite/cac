@@ -65,7 +65,8 @@ function gerarMensagemWhatsapp(registo) {
   const qtdObjetos = registo.qtdObjetos !== undefined ? registo.qtdObjetos : 0;
   const qtdRecolhas = registo.qtdRecolhas !== undefined ? parseInt(registo.qtdRecolhas, 10) : 0;
 
-  const qtdAvisados = parseInt(registo.qtdAvisados || 0, 10);
+  const qtdAvisadosLoja = parseInt(registo.qtdAvisadosLoja !== undefined ? registo.qtdAvisadosLoja : (registo.qtdAvisados || 0), 10);
+  const qtdAvisadosCacifo = parseInt(registo.qtdAvisadosCacifo || 0, 10);
   const qtdRetornos = parseInt(registo.qtdRetornos || 0, 10);
   const qtdEndInsuficiente = parseInt(registo.qtdEndInsuficiente || 0, 10);
   const qtdRecusados = parseInt(registo.qtdRecusados || 0, 10);
@@ -84,7 +85,7 @@ function gerarMensagemWhatsapp(registo) {
   // Quantidade de objetos entregues (usa campo existente ou calcula abatendo incidências)
   let qtdEntregues = registo.qtdEntregues;
   if (qtdEntregues === undefined || qtdEntregues === null) {
-    const somaInc = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
+    const somaInc = (qtdAvisadosLoja + qtdAvisadosCacifo) + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
     qtdEntregues = Math.max(0, parseInt(qtdObjetos, 10) - somaInc);
   } else {
     qtdEntregues = parseInt(qtdEntregues, 10);
@@ -116,8 +117,11 @@ function gerarMensagemWhatsapp(registo) {
   if (qtdRecolhas > 0) {
     linhasFinal.push(`Qtd Pontos Recolhas: *${qtdRecolhas}*`);
   }
-  if (qtdAvisados > 0) {
-    linhasFinal.push(`Qtd Avisados: *${qtdAvisados}*`);
+  if (qtdAvisadosLoja > 0) {
+    linhasFinal.push(`Qtd Avisados Loja: *${qtdAvisadosLoja}*`);
+  }
+  if (qtdAvisadosCacifo > 0) {
+    linhasFinal.push(`Qtd Avisados Cacifo: *${qtdAvisadosCacifo}*`);
   }
   if (qtdRetornos > 0) {
     linhasFinal.push(`Qtd Retornos ao Centro: *${qtdRetornos}*`);
@@ -131,7 +135,7 @@ function gerarMensagemWhatsapp(registo) {
   if (qtdDescMorada > 0) {
     linhasFinal.push(`Qtd Desc. Morada: *${qtdDescMorada}*`);
   }
-  linhasFinal.push(`_Qtd Objetos Entregues:_ *${qtdEntregues}*`);
+  linhasFinal.push(`Qtd Objetos Entregues: *${qtdEntregues}*`);
 
   const linhas = [
     `*Controlo Diário*`,

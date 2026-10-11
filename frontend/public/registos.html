@@ -190,8 +190,12 @@
           <span style="font-size: 13px; font-weight: 700; color: var(--color-on-surface); display: block; margin-bottom: 8px;">Incidências (Não Entregues)</span>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <div>
-              <label style="font-size: 12px; color: var(--color-secondary);">Avisados</label>
-              <input type="number" id="edit-avisados" name="qtdAvisados" class="form-control" style="height: 44px;" min="0">
+              <label style="font-size: 12px; color: var(--color-secondary);">Avisados Loja</label>
+              <input type="number" id="edit-avisados-loja" name="qtdAvisadosLoja" class="form-control" style="height: 44px;" min="0">
+            </div>
+            <div>
+              <label style="font-size: 12px; color: var(--color-secondary);">Avisados Cacifo</label>
+              <input type="number" id="edit-avisados-cacifo" name="qtdAvisadosCacifo" class="form-control" style="height: 44px;" min="0">
             </div>
             <div>
               <label style="font-size: 12px; color: var(--color-secondary);">Retornos</label>
@@ -205,7 +209,7 @@
               <label style="font-size: 12px; color: var(--color-secondary);">Recusados</label>
               <input type="number" id="edit-recusados" name="qtdRecusados" class="form-control" style="height: 44px;" min="0">
             </div>
-            <div style="grid-column: span 2;">
+            <div>
               <label style="font-size: 12px; color: var(--color-secondary);">Desconhecido Morada</label>
               <input type="number" id="edit-desc-morada" name="qtdDescMorada" class="form-control" style="height: 44px;" min="0">
             </div>
@@ -386,7 +390,8 @@
       preencherCampo('edit-giro', reg.giroDia);
       preencherCampo('edit-objetos', reg.qtdObjetos);
       preencherCampo('edit-recolhas', reg.qtdRecolhas);
-      preencherCampo('edit-avisados', reg.qtdAvisados);
+      preencherCampo('edit-avisados-loja', reg.qtdAvisadosLoja !== undefined ? reg.qtdAvisadosLoja : (reg.qtdAvisados || 0));
+      preencherCampo('edit-avisados-cacifo', reg.qtdAvisadosCacifo || 0);
       preencherCampo('edit-retornos', reg.qtdRetornos);
       preencherCampo('edit-end-insuf', reg.qtdEndInsuficiente);
       preencherCampo('edit-recusados', reg.qtdRecusados);
@@ -512,13 +517,14 @@
           const giroDia = document.getElementById('edit-giro').value.trim().toUpperCase();
           const qtdObjetos = parseInt(document.getElementById('edit-objetos').value || 0, 10);
           const qtdRecolhas = parseInt(document.getElementById('edit-recolhas').value || 0, 10);
-          const qtdAvisados = parseInt(document.getElementById('edit-avisados').value || 0, 10);
+          const qtdAvisadosLoja = parseInt(document.getElementById('edit-avisados-loja').value || 0, 10);
+          const qtdAvisadosCacifo = parseInt(document.getElementById('edit-avisados-cacifo').value || 0, 10);
           const qtdRetornos = parseInt(document.getElementById('edit-retornos').value || 0, 10);
           const qtdEndInsuficiente = parseInt(document.getElementById('edit-end-insuf').value || 0, 10);
           const qtdRecusados = parseInt(document.getElementById('edit-recusados').value || 0, 10);
           const qtdDescMorada = parseInt(document.getElementById('edit-desc-morada').value || 0, 10);
 
-          const totalIncEdicao = qtdAvisados + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
+          const totalIncEdicao = qtdAvisadosLoja + qtdAvisadosCacifo + qtdRetornos + qtdEndInsuficiente + qtdRecusados + qtdDescMorada;
           if (totalIncEdicao > qtdObjetos) {
             CAC.mostrarAlerta('modal-alert-container', 'A soma das incidências (não entregues) não pode ser maior do que a Quantidade Total de Objetos.', 'danger');
             return;
@@ -538,7 +544,8 @@
               giroDia,
               qtdObjetos,
               qtdRecolhas,
-              qtdAvisados,
+              qtdAvisadosLoja,
+              qtdAvisadosCacifo,
               qtdRetornos,
               qtdEndInsuficiente,
               qtdRecusados,

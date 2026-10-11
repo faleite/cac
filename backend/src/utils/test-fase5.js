@@ -70,7 +70,8 @@ function testarUnitariosFormatters() {
     giroDia: '2825H',
     qtdObjetos: 159,
     qtdRecolhas: 1,
-    qtdAvisados: 1,
+    qtdAvisadosLoja: 1,
+    qtdAvisadosCacifo: 0,
     qtdRetornos: 3,
     qtdEndInsuficiente: 0,
     qtdRecusados: 0,
@@ -94,29 +95,31 @@ function testarUnitariosFormatters() {
   assert(msg.includes('Qtd Objetos: *159*'), 'Deve conter Qtd Objetos');
   assert(msg.includes('Qtd Pontos Recolhas: *1*'), 'Deve conter Qtd Pontos Recolhas');
   assert(msg.includes('Qtd Kms Percorridos: *71*'), 'Deve conter Qtd Kms Percorridos calculado (73207 - 73136)');
-  assert(msg.includes('Qtd Avisados: *1*'), 'Qtd Avisados deve ser *1*');
+  assert(msg.includes('Qtd Avisados Loja: *1*'), 'Qtd Avisados Loja deve ser *1*');
+  assert(!msg.includes('Qtd Avisados Cacifo'), 'Qtd Avisados Cacifo zerado deve ser omitido');
   assert(msg.includes('Qtd Retornos ao Centro: *3*'), 'Qtd Retornos ao Centro deve ser *3*');
   assert(!msg.includes('Qtd Endereço Insuf.'), 'Qtd Endereço Insuf. zerado deve ser omitido');
   assert(!msg.includes('Qtd Recusados'), 'Qtd Recusados zerado deve ser omitido');
   assert(msg.includes('Qtd Desc. Morada: *1*'), 'Qtd Desc. Morada deve ser *1*');
-  assert(msg.includes('_Qtd Objetos Entregues:_ *154*'), 'Deve conter Qtd Objetos Entregues');
+  assert(msg.includes('Qtd Objetos Entregues: *154*'), 'Deve conter Qtd Objetos Entregues');
 
-  // Cenário 2: Exemplo Oficial de Fecho (Campos zerados omitidos e Recolhas = 1)
+  // Cenário 2: Exemplo Oficial de Fecho (Campos zerados omitidos, Avisados Loja = 2, Avisados Cacifo = 1)
   const mockExemplo = {
-    dataRegisto: new Date('2026-10-04T00:00:00.000Z'),
+    dataRegisto: new Date('2026-10-11T00:00:00.000Z'),
     matriculaDia: 'BG91EA',
     kmInicial: 12,
     kmFinal: 127,
     giroDia: '2820G',
     qtdObjetos: 112,
     qtdRecolhas: 1,
-    qtdAvisados: 1,
-    qtdRetornos: 0,
+    qtdAvisadosLoja: 2,
+    qtdAvisadosCacifo: 1,
+    qtdRetornos: 1,
     qtdEndInsuficiente: 0,
     qtdRecusados: 0,
     qtdDescMorada: 0,
     kmPercorridos: 115,
-    qtdEntregues: 111,
+    qtdEntregues: 108,
     usuario: {
       primeiroNome: 'Fabricio',
       ultimoNome: 'Leite'
@@ -126,7 +129,7 @@ function testarUnitariosFormatters() {
   const msgExemplo = gerarMensagemWhatsapp(mockExemplo);
   const esperadoExemplo = [
     '*Controlo Diário*',
-    '*_04/10/2026_*',
+    '*_11/10/2026_*',
     '',
     '*Início*',
     'Nome: *Fabricio Leite*',
@@ -144,8 +147,10 @@ function testarUnitariosFormatters() {
     'Qtd Kms Percorridos: *115*',
     'Qtd Objetos: *112*',
     'Qtd Pontos Recolhas: *1*',
-    'Qtd Avisados: *1*',
-    '_Qtd Objetos Entregues:_ *111*'
+    'Qtd Avisados Loja: *2*',
+    'Qtd Avisados Cacifo: *1*',
+    'Qtd Retornos ao Centro: *1*',
+    'Qtd Objetos Entregues: *108*'
   ].join('\n');
 
   assert.strictEqual(msgExemplo, esperadoExemplo, 'Mensagem deve ser idêntica ao exemplo oficial');
@@ -226,7 +231,8 @@ async function testarControllerWhatsapp() {
       giroDia: '1000A',
       qtdObjetos: 100,
       qtdRecolhas: 5,
-      qtdAvisados: 2,
+      qtdAvisadosLoja: 2,
+      qtdAvisadosCacifo: 0,
       qtdRetornos: 1,
       qtdEndInsuficiente: 0,
       qtdRecusados: 0,
