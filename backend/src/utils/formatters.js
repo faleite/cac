@@ -101,7 +101,7 @@ function gerarMensagemWhatsapp(registo) {
     `Qtd Objetos: *${qtdObjetos}*`
   ];
   if (qtdRecolhas > 0) {
-    linhasInicio.push(`Qtd Pontos Recolhas: *${qtdRecolhas}*`);
+    linhasInicio.push(`Qtd Recolhas: *${qtdRecolhas}*`);
   }
 
   // Seção Final
@@ -115,7 +115,7 @@ function gerarMensagemWhatsapp(registo) {
     `Qtd Objetos: *${qtdObjetos}*`
   ];
   if (qtdRecolhas > 0) {
-    linhasFinal.push(`Qtd Pontos Recolhas: *${qtdRecolhas}*`);
+    linhasFinal.push(`Qtd Recolhas: *${qtdRecolhas}*`);
   }
   if (qtdAvisadosLoja > 0) {
     linhasFinal.push(`Qtd Avisados Loja: *${qtdAvisadosLoja}*`);

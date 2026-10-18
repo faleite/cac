@@ -93,7 +93,7 @@ function testarUnitariosFormatters() {
   assert(msg.includes('Km iniciais: *73136*'), 'Deve conter Km iniciais');
   assert(msg.includes('Km Finais: *73207*'), 'Deve conter Km Finais');
   assert(msg.includes('Qtd Objetos: *159*'), 'Deve conter Qtd Objetos');
-  assert(msg.includes('Qtd Pontos Recolhas: *1*'), 'Deve conter Qtd Pontos Recolhas');
+  assert(msg.includes('Qtd Recolhas: *1*'), 'Deve conter Qtd Recolhas');
   assert(msg.includes('Qtd Kms Percorridos: *71*'), 'Deve conter Qtd Kms Percorridos calculado (73207 - 73136)');
   assert(msg.includes('Qtd Avisados Loja: *1*'), 'Qtd Avisados Loja deve ser *1*');
   assert(!msg.includes('Qtd Avisados Cacifo'), 'Qtd Avisados Cacifo zerado deve ser omitido');
@@ -137,7 +137,7 @@ function testarUnitariosFormatters() {
     'Km iniciais: *12*',
     'Giro: *2820G*',
     'Qtd Objetos: *112*',
-    'Qtd Pontos Recolhas: *1*',
+    'Qtd Recolhas: *1*',
     '',
     '*Final*',
     'Nome: *Fabricio Leite*',
@@ -146,7 +146,7 @@ function testarUnitariosFormatters() {
     'Giro: *2820G*',
     'Qtd Kms Percorridos: *115*',
     'Qtd Objetos: *112*',
-    'Qtd Pontos Recolhas: *1*',
+    'Qtd Recolhas: *1*',
     'Qtd Avisados Loja: *2*',
     'Qtd Avisados Cacifo: *1*',
     'Qtd Retornos ao Centro: *1*',
@@ -162,8 +162,8 @@ function testarUnitariosFormatters() {
     qtdRecolhas: 0
   };
   const msgSemRecolhas = gerarMensagemWhatsapp(mockSemRecolhas);
-  assert(!msgSemRecolhas.includes('Qtd Pontos Recolhas'), 'Recolhas zeradas não devem constar nem no Início nem no Final');
-  console.log('  ✅ [PASSOU] Omissão de Qtd Pontos Recolhas quando igual a 0 validada com sucesso');
+  assert(!msgSemRecolhas.includes('Qtd Recolhas'), 'Recolhas zeradas não devem constar nem no Início nem no Final');
+  console.log('  ✅ [PASSOU] Omissão de Qtd Recolhas quando igual a 0 validada com sucesso');
 
   console.log('  ✅ [PASSOU] Estrutura da Mensagem alinhada com modelo oficial e regras de negócio');
 }
