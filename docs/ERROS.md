@@ -23,6 +23,8 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
 | **ERR-013** | 2026-10-10 | Backend & Frontend / Validação de Nomes | Campos "Primeiro Nome" e "Último Nome" aceitavam múltiplos nomes/palavras com espaços. | Ausência de restrição de palavra única e rejeição de caracteres de espaçamento nos controladores e inputs. | Adicionada validação estrita com regex `^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$` e bloqueio de espaços no backend (`AuthController.js` e `PerfilController.js`) com HTTP 400; no frontend (`registo.html` e `perfil.html`) bloqueio da tecla espaço, sanitização em evento `input`, atributo `pattern` e validação com feedback visual no `submit`. | **Resolvido** |
 | **ERR-014** | 2026-10-10 | Deploy & Prisma ORM / Servidor Oracle | Erro HTTP 500 no `POST /api/auth/login` em produção após migração de colunas. | A migração removeu a coluna legada `nome_completo`, mas o `@prisma/client` no container não foi regenerado e o backend não foi reiniciado após `prisma migrate deploy`, tentando buscar a coluna excluída. | Configurado `"dev": "prisma generate && nodemon src/index.js"` no `package.json`, atualizado o workflow de deploy (`deploy.yml`) para executar `npm run prisma:generate`, `npm run prisma:migrate` e `docker compose restart backend`. | **Resolvido** |
 | **ERR-015** | 2026-10-10 | Frontend / Perfil do Colaborador | Inoperância ao submeter "Guardar Alterações do Perfil" em `perfil.html`: formulário recarregava sem salvar dados nem exibir mensagens. | Ausência de declaração das constantes `formPerfil` e `btnSalvar` no script client-side; `form.addEventListener` falhava com `ReferenceError`, impedindo o anexo do manipulador `submit` com `e.preventDefault()`, resultando em submissão GET nativa e recarregamento da página. | Declaração explícita de `formPerfil` e `btnSalvar` via `document.getElementById`, sanitização em maiúsculas de matrícula e giro padrão, validação cruzada de senha com rolagem suave (`window.scrollTo`) e feedback de alerta imediato. | **Resolvido** |
+| **ERR-016** | 2026-10-21 | Frontend / Cache Estático & Nginx | Visual desconfigurado no rodapé em produção após deploy: HTML atualizado com texto, mas estilos CSS não aplicados no navegador. | O Nginx de produção possuía regra de cache estático com `expires 7d` e os arquivos HTML requisitavam `/css/custom.css` sem versionamento, fazendo com que o navegador utilizasse a folha de estilo antiga em cache que não continha as classes `.app-footer`. | Implementado cache-busting versionado (`/css/custom.css?v=1.1.0`) em todas as páginas HTML, reconfigurado o bloco de assets em `nginx.prod.conf` para `no-cache, public, must-revalidate` para CSS/JS, e reforçadas as propriedades de estilo de `.app-footer-link`. | **Resolvido** |
+
 
 ---
 
@@ -160,6 +162,17 @@ Arquivo vivo para documentação de erros técnicos, anomalias, problemas de amb
   3. Adicionada sanitização com `.toUpperCase()` nos campos de matrícula e giro padrão.
   4. Implementadas validações completas de troca de palavra-passe (exigência de senha atual caso nova senha seja definida, verificação de comprimento e confirmação coincidente) com rolagem suave (`window.scrollTo({ top: 0, behavior: 'smooth' })`) para que os alertas no topo sejam imediatamente visíveis ao usuário em dispositivos móveis e desktops.
   5. Testes automatizados executados e 100% aprovados.
+
+### Caso ERR-016: Cache Estático de CSS no Navegador em Produção após Deploy do Rodapé
+- **Contexto:** Após realizar o merge e deploy na branch `main`, ao acessar a aplicação em produção, o texto do rodapé foi renderizado, porém o estilo visual apareceu desalinhado/desconfigurado (links e texto sem formatação do Design System).
+- **Impacto:** Degradação visual transitória do rodapé em clientes com histórico de navegação prévio.
+- **Causa-Raiz:**
+  1. *Cache agressivo em produção:* O arquivo `frontend/nginx.prod.conf` configurava `expires 7d; add_header Cache-Control "public, no-transform";` para todos os assets estáticos incluindo `.css`.
+  2. *Ausência de Cache-Busting:* As tags `<link rel="stylesheet" href="/css/custom.css">` nos arquivos HTML não continham versionamento via query string (`?v=...`), fazendo com que o navegador reutilizasse a versão compilada em cache de dias anteriores que não possuía a classe `.app-footer`.
+- **Resolução:**
+  1. Adicionado versionamento por query string (`/css/custom.css?v=1.1.0`) em todos os 11 arquivos HTML do frontend.
+  2. Em `frontend/nginx.prod.conf`, o bloco de cache estático foi especializado: arquivos `.css` e `.js` agora utilizam `expires -1; add_header Cache-Control "no-cache, public, must-revalidate";`, garantindo que atualizações de layout sejam validadas e refletidas instantaneamente sem retenção indevida de cache, mantendo cache longo de 7 dias exclusivamente para mídias e fontes.
+  3. Reforçadas as regras de estilo de `.app-footer-link` e `.app-footer-divider` com especificidade explícita.
 
 ---
 

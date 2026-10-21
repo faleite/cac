@@ -501,6 +501,7 @@ body {
   font-weight: 500;
   color: var(--color-secondary);
   margin: 0;
+  font-size: 12px;
 }
 
 .app-footer-links {
@@ -510,19 +511,21 @@ body {
   flex-wrap: wrap;
   gap: 6px;
   margin: 0;
+  font-size: 12px;
 }
 
 .app-footer-link {
-  color: var(--color-secondary);
+  color: var(--color-secondary) !important;
   text-decoration: none;
   font-weight: 500;
+  font-size: 12px;
   transition: color 0.15s ease;
   padding: 2px 2px;
 }
 
 .app-footer-link:hover,
 .app-footer-link:focus {
-  color: var(--color-primary);
+  color: var(--color-primary) !important;
   text-decoration: underline;
 }
 
@@ -530,6 +533,8 @@ body {
   color: var(--color-outline-variant);
   font-weight: 300;
   user-select: none;
+  padding: 0 2px;
 }
+
 
 
