@@ -475,3 +475,61 @@ body {
   background-color: #fff9f9;
 }
 
+/* ==========================================================================
+   Rodapé Institucional e Legal (Footer)
+   ========================================================================== */
+.app-footer {
+  width: 100%;
+  margin-top: auto;
+  padding: 24px 16px 16px 16px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-secondary);
+}
+
+.app-footer-inner {
+  max-width: var(--max-width-mobile);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.app-footer-copyright {
+  font-weight: 500;
+  color: var(--color-secondary);
+  margin: 0;
+}
+
+.app-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.app-footer-link {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  padding: 2px 2px;
+}
+
+.app-footer-link:hover,
+.app-footer-link:focus {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.app-footer-divider {
+  color: var(--color-outline-variant);
+  font-weight: 300;
+  user-select: none;
+}
+
+
